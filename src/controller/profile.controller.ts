@@ -9,7 +9,7 @@ const profileController = {
   getMyProfile: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     const profile = await profileService.getMyProfile(req.auth!.userId);
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,

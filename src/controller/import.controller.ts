@@ -8,7 +8,7 @@ import importService from "../service/import.service";
 const importController = {
   importExcel: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     if (!req.file) {
-      res.status(HTTP_STATUS.BAD_REQUEST).json(
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
         apiResponse.buildResponse({
           status: HTTP_STATUS.BAD_REQUEST,
           success: false,
@@ -17,7 +17,6 @@ const importController = {
           data: null,
         }),
       );
-      return;
     }
 
     const summary = await importService.importExcelData({
@@ -26,7 +25,7 @@ const importController = {
       buffer: req.file.buffer,
     });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -46,7 +45,7 @@ const importController = {
     );
     res.setHeader("Content-Disposition", "attachment; filename=college-export.xlsx");
 
-    res.status(HTTP_STATUS.OK).send(buffer);
+    return res.status(HTTP_STATUS.OK).send(buffer);
   }),
 };
 

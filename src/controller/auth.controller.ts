@@ -9,7 +9,7 @@ const authController = {
   login: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.login(req.body.username, req.body.password);
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -28,7 +28,7 @@ const authController = {
       await authService.logout(token);
     }
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -42,7 +42,7 @@ const authController = {
   refresh: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     const tokens = await authService.refreshAuthTokens(req.body.refreshToken);
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -60,7 +60,7 @@ const authController = {
       channel: req.body.channel,
     });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -79,7 +79,7 @@ const authController = {
       newPassword: req.body.newPassword,
     });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -97,7 +97,7 @@ const authController = {
       newPassword: req.body.newPassword,
     });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,

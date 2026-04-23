@@ -16,7 +16,7 @@ const userController = {
       actorId: req.auth!.userId,
     });
 
-    res.status(HTTP_STATUS.CREATED).json(
+    return res.status(HTTP_STATUS.CREATED).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.CREATED,
         success: true,
@@ -34,7 +34,7 @@ const userController = {
       actorId: req.auth!.userId,
     });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -51,7 +51,7 @@ const userController = {
       actorId: req.auth!.userId,
     });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -69,7 +69,7 @@ const userController = {
       actorId: req.auth!.userId,
     });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -83,7 +83,7 @@ const userController = {
   grantAdmin: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     await userService.grantAdmin({ userId: String(req.params.userId), actorId: req.auth!.userId });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
@@ -97,7 +97,7 @@ const userController = {
   revokeAdmin: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     await userService.revokeAdmin({ userId: String(req.params.userId), actorId: req.auth!.userId });
 
-    res.status(HTTP_STATUS.OK).json(
+    return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
