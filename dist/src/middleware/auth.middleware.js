@@ -1,15 +1,17 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requireAuth = void 0;
 const prisma_1 = require("../config/prisma");
 const httpStatus_1 = require("../constants/httpStatus");
 const messages_1 = require("../constants/messages");
-const apiResponse_1 = require("../utils/apiResponse");
-const jwt_1 = require("../utils/jwt");
+const apiResponse_1 = __importDefault(require("../utils/apiResponse"));
+const jwt_1 = __importDefault(require("../utils/jwt"));
 const requireAuth = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json((0, apiResponse_1.buildResponse)({
+        res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.UNAUTHORIZED,
             success: false,
             message: messages_1.MESSAGES.UNAUTHORIZED,
@@ -19,12 +21,12 @@ const requireAuth = async (req, res, next) => {
     }
     const token = authHeader.slice(7);
     try {
-        const payload = (0, jwt_1.verifyAccessToken)(token);
+        const payload = jwt_1.default.verifyAccessToken(token);
         const blacklisted = await prisma_1.prisma.tokenBlacklist.findUnique({
             where: { jti: payload.jti },
         });
         if (blacklisted) {
-            res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json((0, apiResponse_1.buildResponse)({
+            res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json(apiResponse_1.default.buildResponse({
                 status: httpStatus_1.HTTP_STATUS.UNAUTHORIZED,
                 success: false,
                 message: "Token is blacklisted",
@@ -43,7 +45,7 @@ const requireAuth = async (req, res, next) => {
             },
         });
         if (!user || !user.isActive || user.isBlocked) {
-            res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json((0, apiResponse_1.buildResponse)({
+            res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json(apiResponse_1.default.buildResponse({
                 status: httpStatus_1.HTTP_STATUS.UNAUTHORIZED,
                 success: false,
                 message: messages_1.MESSAGES.UNAUTHORIZED,
@@ -62,7 +64,7 @@ const requireAuth = async (req, res, next) => {
         next();
     }
     catch {
-        res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json((0, apiResponse_1.buildResponse)({
+        res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.UNAUTHORIZED,
             success: false,
             message: messages_1.MESSAGES.UNAUTHORIZED,
@@ -70,5 +72,8 @@ const requireAuth = async (req, res, next) => {
         }));
     }
 };
-exports.requireAuth = requireAuth;
+const authMiddleware = {
+    requireAuth,
+};
+exports.default = authMiddleware;
 //# sourceMappingURL=auth.middleware.js.map

@@ -11,9 +11,9 @@ const node_path_1 = __importDefault(require("node:path"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const yamljs_1 = __importDefault(require("yamljs"));
 const router_1 = __importDefault(require("./router"));
-const error_middleware_1 = require("./middleware/error.middleware");
-const notFound_middleware_1 = require("./middleware/notFound.middleware");
-const apiResponse_1 = require("./utils/apiResponse");
+const error_middleware_1 = __importDefault(require("./middleware/error.middleware"));
+const notFound_middleware_1 = __importDefault(require("./middleware/notFound.middleware"));
+const apiResponse_1 = __importDefault(require("./utils/apiResponse"));
 const httpStatus_1 = require("./constants/httpStatus");
 const app = (0, express_1.default)();
 const swaggerDocument = yamljs_1.default.load(node_path_1.default.resolve(process.cwd(), "docs/openapi.yaml"));
@@ -22,9 +22,9 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json({ limit: "2mb" }));
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, morgan_1.default)("dev"));
-app.use("/docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocument));
+app.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swaggerDocument));
 app.get("/health", (_req, res) => {
-    res.status(httpStatus_1.HTTP_STATUS.OK).json((0, apiResponse_1.buildResponse)({
+    res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
         status: httpStatus_1.HTTP_STATUS.OK,
         success: true,
         message: "Server is healthy",
@@ -33,7 +33,7 @@ app.get("/health", (_req, res) => {
     }));
 });
 app.use("/api/v1", router_1.default);
-app.use(notFound_middleware_1.notFoundHandler);
-app.use(error_middleware_1.errorHandler);
+app.use(notFound_middleware_1.default.notFoundHandler);
+app.use(error_middleware_1.default.errorHandler);
 exports.default = app;
 //# sourceMappingURL=app.js.map

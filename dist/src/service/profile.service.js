@@ -1,41 +1,13 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMyProfile = void 0;
-const prisma_1 = require("../config/prisma");
+const profile_model_1 = __importDefault(require("../model/profile.model"));
 const appError_1 = require("../utils/appError");
 const httpStatus_1 = require("../constants/httpStatus");
 const getMyProfile = async (userId) => {
-    const user = await prisma_1.prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-            studentProfile: {
-                include: {
-                    classRoom: true,
-                    attendance: {
-                        include: { subject: true },
-                        orderBy: { date: "desc" },
-                        take: 30,
-                    },
-                    marks: {
-                        include: { exam: true, subject: true },
-                        orderBy: { createdAt: "desc" },
-                        take: 50,
-                    },
-                    results: {
-                        include: { exam: true },
-                        orderBy: { createdAt: "desc" },
-                        take: 20,
-                    },
-                },
-            },
-            teacherProfile: true,
-            roles: {
-                include: {
-                    role: true,
-                },
-            },
-        },
-    });
+    const user = await profile_model_1.default.findProfileByUserId(userId);
     if (!user) {
         throw new appError_1.AppError(httpStatus_1.HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
     }
@@ -51,5 +23,8 @@ const getMyProfile = async (userId) => {
         teacherProfile: user.teacherProfile,
     };
 };
-exports.getMyProfile = getMyProfile;
+const profileService = {
+    getMyProfile,
+};
+exports.default = profileService;
 //# sourceMappingURL=profile.service.js.map

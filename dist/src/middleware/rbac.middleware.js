@@ -1,16 +1,18 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requirePermission = exports.requireRoles = void 0;
 const prisma_1 = require("../config/prisma");
 const httpStatus_1 = require("../constants/httpStatus");
 const messages_1 = require("../constants/messages");
-const apiResponse_1 = require("../utils/apiResponse");
+const apiResponse_1 = __importDefault(require("../utils/apiResponse"));
 const requireRoles = (allowedRoles) => {
     return (req, res, next) => {
         const roles = req.auth?.roles ?? [];
         const hasRole = roles.some((role) => allowedRoles.includes(role));
         if (!hasRole) {
-            res.status(httpStatus_1.HTTP_STATUS.FORBIDDEN).json((0, apiResponse_1.buildResponse)({
+            res.status(httpStatus_1.HTTP_STATUS.FORBIDDEN).json(apiResponse_1.default.buildResponse({
                 status: httpStatus_1.HTTP_STATUS.FORBIDDEN,
                 success: false,
                 message: messages_1.MESSAGES.FORBIDDEN,
@@ -21,12 +23,11 @@ const requireRoles = (allowedRoles) => {
         next();
     };
 };
-exports.requireRoles = requireRoles;
 const requirePermission = (permissionCode) => {
     return async (req, res, next) => {
         const userId = req.auth?.userId;
         if (!userId) {
-            res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json((0, apiResponse_1.buildResponse)({
+            res.status(httpStatus_1.HTTP_STATUS.UNAUTHORIZED).json(apiResponse_1.default.buildResponse({
                 status: httpStatus_1.HTTP_STATUS.UNAUTHORIZED,
                 success: false,
                 message: messages_1.MESSAGES.UNAUTHORIZED,
@@ -49,7 +50,7 @@ const requirePermission = (permissionCode) => {
             },
         });
         if (!permission) {
-            res.status(httpStatus_1.HTTP_STATUS.FORBIDDEN).json((0, apiResponse_1.buildResponse)({
+            res.status(httpStatus_1.HTTP_STATUS.FORBIDDEN).json(apiResponse_1.default.buildResponse({
                 status: httpStatus_1.HTTP_STATUS.FORBIDDEN,
                 success: false,
                 message: messages_1.MESSAGES.FORBIDDEN,
@@ -60,5 +61,9 @@ const requirePermission = (permissionCode) => {
         next();
     };
 };
-exports.requirePermission = requirePermission;
+const rbacMiddleware = {
+    requireRoles,
+    requirePermission,
+};
+exports.default = rbacMiddleware;
 //# sourceMappingURL=rbac.middleware.js.map

@@ -1,172 +1,130 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.revokeAdmin = exports.grantAdmin = exports.forceResetPassword = exports.unblockUser = exports.blockUser = exports.createUser = void 0;
-const prisma_1 = require("../config/prisma");
 const httpStatus_1 = require("../constants/httpStatus");
 const roles_1 = require("../constants/roles");
+const user_model_1 = __importDefault(require("../model/user.model"));
 const appError_1 = require("../utils/appError");
-const password_1 = require("../utils/password");
+const password_1 = __importDefault(require("../utils/password"));
 const createUser = async (params) => {
-    const existing = await prisma_1.prisma.user.findFirst({
-        where: {
-            OR: [
-                { username: params.username },
-                params.email ? { email: params.email } : undefined,
-                params.phone ? { phone: params.phone } : undefined,
-            ].filter(Boolean),
-        },
-    });
+    const userFilters = [{ username: params.username }];
+    if (params.email) {
+        userFilters.push({ email: params.email });
+    }
+    if (params.phone) {
+        userFilters.push({ phone: params.phone });
+    }
+    const existing = await user_model_1.default.findExistingUser(userFilters);
     if (existing) {
         throw new appError_1.AppError(httpStatus_1.HTTP_STATUS.CONFLICT, "User already exists", "VALIDATION_ERROR");
     }
-    const roleRecords = await prisma_1.prisma.role.findMany({
-        where: { code: { in: params.roles } },
-    });
+    const roleRecords = await user_model_1.default.findRolesByCodes(params.roles);
     if (roleRecords.length !== params.roles.length) {
         throw new appError_1.AppError(httpStatus_1.HTTP_STATUS.BAD_REQUEST, "Invalid roles in payload", "VALIDATION_ERROR");
     }
-    const user = await prisma_1.prisma.user.create({
-        data: {
-            username: params.username,
-            email: params.email ?? null,
-            phone: params.phone ?? null,
-            passwordHash: await (0, password_1.hashPassword)(params.password),
-            roles: {
-                create: roleRecords.map((role) => ({ roleId: role.id })),
-            },
-        },
+    const user = await user_model_1.default.createUser({
+        username: params.username,
+        email: params.email ?? null,
+        phone: params.phone ?? null,
+        passwordHash: await password_1.default.hashPassword(params.password),
+        roleIds: roleRecords.map((role) => role.id),
     });
-    await prisma_1.prisma.auditLog.create({
-        data: {
-            actorId: params.actorId,
-            targetId: user.id,
-            action: "USER_CREATE",
-            meta: { roles: params.roles },
-        },
+    await user_model_1.default.createAuditLog({
+        actorId: params.actorId,
+        targetId: user.id,
+        action: "USER_CREATE",
+        meta: { roles: params.roles },
     });
     return user;
 };
-exports.createUser = createUser;
 const blockUser = async (params) => {
-    const user = await prisma_1.prisma.user.findUnique({ where: { id: params.userId } });
+    const user = await user_model_1.default.findUserById(params.userId);
     if (!user) {
         throw new appError_1.AppError(httpStatus_1.HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
     }
-    const updated = await prisma_1.prisma.user.update({
-        where: { id: params.userId },
-        data: {
-            isBlocked: true,
-            blockedReason: params.reason,
-            blockedAt: new Date(),
-        },
+    const updated = await user_model_1.default.updateBlockStatus({
+        userId: params.userId,
+        isBlocked: true,
+        blockedReason: params.reason,
+        blockedAt: new Date(),
     });
-    await prisma_1.prisma.auditLog.create({
-        data: {
-            actorId: params.actorId,
-            targetId: params.userId,
-            action: "USER_BLOCK",
-            meta: { reason: params.reason },
-        },
+    await user_model_1.default.createAuditLog({
+        actorId: params.actorId,
+        targetId: params.userId,
+        action: "USER_BLOCK",
+        meta: { reason: params.reason },
     });
     return updated;
 };
-exports.blockUser = blockUser;
 const unblockUser = async (params) => {
-    const user = await prisma_1.prisma.user.findUnique({ where: { id: params.userId } });
+    const user = await user_model_1.default.findUserById(params.userId);
     if (!user) {
         throw new appError_1.AppError(httpStatus_1.HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
     }
-    const updated = await prisma_1.prisma.user.update({
-        where: { id: params.userId },
-        data: {
-            isBlocked: false,
-            blockedReason: null,
-            blockedAt: null,
-        },
+    const updated = await user_model_1.default.updateBlockStatus({
+        userId: params.userId,
+        isBlocked: false,
+        blockedReason: null,
+        blockedAt: null,
     });
-    await prisma_1.prisma.auditLog.create({
-        data: {
-            actorId: params.actorId,
-            targetId: params.userId,
-            action: "USER_UNBLOCK",
-        },
+    await user_model_1.default.createAuditLog({
+        actorId: params.actorId,
+        targetId: params.userId,
+        action: "USER_UNBLOCK",
     });
     return updated;
 };
-exports.unblockUser = unblockUser;
 const forceResetPassword = async (params) => {
-    const user = await prisma_1.prisma.user.findUnique({ where: { id: params.userId } });
+    const user = await user_model_1.default.findUserById(params.userId);
     if (!user) {
         throw new appError_1.AppError(httpStatus_1.HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
     }
-    await prisma_1.prisma.user.update({
-        where: { id: params.userId },
-        data: {
-            passwordHash: await (0, password_1.hashPassword)(params.newPassword),
-        },
+    await user_model_1.default.updatePassword(params.userId, await password_1.default.hashPassword(params.newPassword));
+    await user_model_1.default.createPasswordResetRequest({
+        userId: params.userId,
+        requestedBy: params.actorId,
+        method: "ADMIN_FORCE",
+        status: "COMPLETED",
     });
-    await prisma_1.prisma.passwordResetRequest.create({
-        data: {
-            userId: params.userId,
-            requestedBy: params.actorId,
-            method: "ADMIN_FORCE",
-            status: "COMPLETED",
-        },
-    });
-    await prisma_1.prisma.auditLog.create({
-        data: {
-            actorId: params.actorId,
-            targetId: params.userId,
-            action: "USER_FORCE_PASSWORD_RESET",
-        },
+    await user_model_1.default.createAuditLog({
+        actorId: params.actorId,
+        targetId: params.userId,
+        action: "USER_FORCE_PASSWORD_RESET",
     });
 };
-exports.forceResetPassword = forceResetPassword;
 const grantAdmin = async (params) => {
-    const adminRole = await prisma_1.prisma.role.findUnique({ where: { code: roles_1.ROLES.ADMIN } });
+    const adminRole = await user_model_1.default.findRoleByCode(roles_1.ROLES.ADMIN);
     if (!adminRole) {
         throw new appError_1.AppError(httpStatus_1.HTTP_STATUS.BAD_REQUEST, "Admin role not configured", "VALIDATION_ERROR");
     }
-    await prisma_1.prisma.userRole.upsert({
-        where: {
-            userId_roleId: {
-                userId: params.userId,
-                roleId: adminRole.id,
-            },
-        },
-        update: {},
-        create: {
-            userId: params.userId,
-            roleId: adminRole.id,
-        },
-    });
-    await prisma_1.prisma.auditLog.create({
-        data: {
-            actorId: params.actorId,
-            targetId: params.userId,
-            action: "ADMIN_GRANTED",
-        },
+    await user_model_1.default.upsertUserRole(params.userId, adminRole.id);
+    await user_model_1.default.createAuditLog({
+        actorId: params.actorId,
+        targetId: params.userId,
+        action: "ADMIN_GRANTED",
     });
 };
-exports.grantAdmin = grantAdmin;
 const revokeAdmin = async (params) => {
-    const adminRole = await prisma_1.prisma.role.findUnique({ where: { code: roles_1.ROLES.ADMIN } });
+    const adminRole = await user_model_1.default.findRoleByCode(roles_1.ROLES.ADMIN);
     if (!adminRole) {
         throw new appError_1.AppError(httpStatus_1.HTTP_STATUS.BAD_REQUEST, "Admin role not configured", "VALIDATION_ERROR");
     }
-    await prisma_1.prisma.userRole.deleteMany({
-        where: {
-            userId: params.userId,
-            roleId: adminRole.id,
-        },
-    });
-    await prisma_1.prisma.auditLog.create({
-        data: {
-            actorId: params.actorId,
-            targetId: params.userId,
-            action: "ADMIN_REVOKED",
-        },
+    await user_model_1.default.deleteUserRole(params.userId, adminRole.id);
+    await user_model_1.default.createAuditLog({
+        actorId: params.actorId,
+        targetId: params.userId,
+        action: "ADMIN_REVOKED",
     });
 };
-exports.revokeAdmin = revokeAdmin;
+const userService = {
+    createUser,
+    blockUser,
+    unblockUser,
+    forceResetPassword,
+    grantAdmin,
+    revokeAdmin,
+};
+exports.default = userService;
 //# sourceMappingURL=user.service.js.map

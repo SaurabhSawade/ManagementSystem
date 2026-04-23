@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildResponse = void 0;
 const buildResponse = (params) => {
     return {
         status: params.status,
@@ -10,5 +9,8 @@ const buildResponse = (params) => {
         data: params.data ?? null,
     };
 };
-exports.buildResponse = buildResponse;
+const apiResponse = {
+    buildResponse,
+};
+exports.default = apiResponse;
 //# sourceMappingURL=apiResponse.js.map
