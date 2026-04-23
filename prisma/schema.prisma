@@ -1,0 +1,292 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+
+}
+
+enum OtpChannel {
+  EMAIL
+  SMS
+}
+
+model User {
+  id             String                 @id @default(uuid())
+  email          String?                @unique
+  phone          String?                @unique
+  username       String                 @unique
+  passwordHash   String
+  isActive       Boolean                @default(true)
+  isBlocked      Boolean                @default(false)
+  blockedReason  String?
+  blockedAt      DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  refreshTokens  TokenBlacklist[]
+  roles          UserRole[]
+  otpRecords     OtpVerification[]
+  resetRequests  PasswordResetRequest[]
+  auditEntries   AuditLog[]             @relation("AuditActor")
+  targetAudits   AuditLog[]             @relation("AuditTarget")
+  studentProfile StudentProfile?
+  teacherProfile TeacherProfile?
+  feeRecords     FeeRecord[]
+  bookIssues     BookIssue[]
+  importsRun     ImportJob[]
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  code        String           @unique
+  name        String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id        String           @id @default(uuid())
+  code      String           @unique
+  name      String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  roles     RolePermission[]
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model TokenBlacklist {
+  id        String   @id @default(uuid())
+  jti       String   @unique
+  tokenType String
+  expiresAt DateTime
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model OtpVerification {
+  id         String      @id @default(uuid())
+  userId     String?
+  email      String?
+  phone      String?
+  channel    OtpChannel
+  codeHash   String
+  purpose    String
+  expiresAt  DateTime
+  attempts   Int         @default(0)
+  isUsed     Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  consumedAt DateTime?
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([phone])
+}
+
+model PasswordResetRequest {
+  id          String   @id @default(uuid())
+  userId      String
+  requestedBy String
+  method      String
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  targetId   String?
+  action     String
+  meta       Json?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  targetUser User?    @relation("AuditTarget", fields: [targetId], references: [id], onDelete: SetNull)
+
+  @@index([action])
+  @@index([createdAt])
+}
+
+model ClassRoom {
+  id         String             @id @default(uuid())
+  name       String
+  section    String
+  createdAt  DateTime           @default(now())
+  students   StudentProfile[]
+  attendance AttendanceRecord[]
+  marks      Mark[]
+  results    Result[]
+
+  @@unique([name, section])
+}
+
+model Subject {
+  id         String   @id @default(uuid())
+  name       String
+  code       String   @unique
+  marks      Mark[]
+  attendance AttendanceRecord[]
+}
+
+model StudentProfile {
+  id            String             @id @default(uuid())
+  userId        String             @unique
+  rollNumber    String             @unique
+  classRoomId   String
+  guardianName  String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classRoom     ClassRoom          @relation(fields: [classRoomId], references: [id])
+  attendance    AttendanceRecord[]
+  marks         Mark[]
+  results       Result[]
+}
+
+model TeacherProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  employeeId  String   @unique
+  department  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AttendanceRecord {
+  id          String         @id @default(uuid())
+  studentId   String
+  classRoomId String
+  subjectId   String
+  date        DateTime
+  status      String
+  createdAt   DateTime       @default(now())
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id])
+  subject     Subject        @relation(fields: [subjectId], references: [id])
+
+  @@unique([studentId, subjectId, date])
+}
+
+model Exam {
+  id          String   @id @default(uuid())
+  name        String
+  term        String
+  examDate    DateTime
+  createdAt   DateTime @default(now())
+  marks       Mark[]
+  results     Result[]
+}
+
+model Mark {
+  id          String         @id @default(uuid())
+  studentId   String
+  classRoomId String
+  subjectId   String
+  examId      String
+  marks       Float
+  maxMarks    Float
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id])
+  subject     Subject        @relation(fields: [subjectId], references: [id])
+  exam        Exam           @relation(fields: [examId], references: [id])
+
+  @@unique([studentId, subjectId, examId])
+}
+
+model Result {
+  id          String         @id @default(uuid())
+  studentId   String
+  classRoomId String
+  examId      String
+  totalMarks  Float
+  percentage  Float
+  grade       String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id])
+  exam        Exam           @relation(fields: [examId], references: [id])
+
+  @@unique([studentId, examId])
+}
+
+model FeeRecord {
+  id          String   @id @default(uuid())
+  userId      String
+  amount      Float
+  dueDate     DateTime
+  status      String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Book {
+  id          String      @id @default(uuid())
+  title       String
+  isbn        String      @unique
+  author      String
+  totalCopies Int
+  available   Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  issues      BookIssue[]
+}
+
+model BookIssue {
+  id         String   @id @default(uuid())
+  bookId     String
+  userId     String
+  issueDate  DateTime
+  dueDate    DateTime
+  returnDate DateTime?
+  fineAmount Float?   @default(0)
+  createdAt  DateTime @default(now())
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ImportJob {
+  id            String   @id @default(uuid())
+  actorId        String
+  fileName       String
+  totalRows      Int
+  successRows    Int
+  failedRows     Int
+  errorSummary   Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  actor          User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+}

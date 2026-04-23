@@ -1,0 +1,329 @@
+openapi: 3.0.3
+info:
+  title: College Management Backend API
+  version: 1.0.0
+  description: API documentation for authentication, user management, profile, and import/export workflows.
+servers:
+  - url: http://localhost:4000
+    description: Local development
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 200
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Request completed successfully
+        type:
+          type: string
+          example: SUCCESS
+        data:
+          nullable: true
+    LoginBody:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          example: superadmin
+        password:
+          type: string
+          example: SuperAdmin@123
+    RefreshBody:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+    ForgotPasswordBody:
+      type: object
+      required: [channel]
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        channel:
+          type: string
+          enum: [EMAIL, SMS]
+    VerifyOtpBody:
+      type: object
+      required: [otp, newPassword]
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        otp:
+          type: string
+          example: "123456"
+        newPassword:
+          type: string
+          example: NewStrongPassword@123
+    ResetMyPasswordBody:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+    CreateUserBody:
+      type: object
+      required: [username, password, roles]
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        password:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [SUPER_ADMIN, ADMIN, STUDENT, TEACHER, ACCOUNTANT, LIBRARY_STAFF]
+    BlockUserBody:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+    ResetUserPasswordBody:
+      type: object
+      required: [newPassword]
+      properties:
+        newPassword:
+          type: string
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+  /api/v1/auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+  /api/v1/auth/refresh:
+    post:
+      summary: Refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshBody"
+      responses:
+        "200":
+          description: Token refreshed
+  /api/v1/auth/logout:
+    post:
+      summary: Logout and blacklist current access token
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+  /api/v1/auth/forgot-password/request-otp:
+    post:
+      summary: Request OTP for forgot password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordBody"
+      responses:
+        "200":
+          description: OTP sent
+  /api/v1/auth/forgot-password/verify-otp:
+    post:
+      summary: Verify OTP and reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOtpBody"
+      responses:
+        "200":
+          description: Password reset successful
+  /api/v1/auth/reset-password:
+    post:
+      summary: Reset own password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetMyPasswordBody"
+      responses:
+        "200":
+          description: Password reset successful
+  /api/v1/users:
+    post:
+      summary: Super admin creates a user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserBody"
+      responses:
+        "201":
+          description: User created
+  /api/v1/users/{userId}/block:
+    patch:
+      summary: Block a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlockUserBody"
+      responses:
+        "200":
+          description: User blocked
+  /api/v1/users/{userId}/unblock:
+    patch:
+      summary: Unblock a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User unblocked
+  /api/v1/users/{userId}/reset-password:
+    patch:
+      summary: Force reset user password
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetUserPasswordBody"
+      responses:
+        "200":
+          description: Password reset
+  /api/v1/users/{userId}/grant-admin:
+    patch:
+      summary: Grant admin role
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Admin granted
+  /api/v1/users/{userId}/revoke-admin:
+    patch:
+      summary: Revoke admin role
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Admin revoked
+  /api/v1/profile/me:
+    get:
+      summary: Get logged-in user profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Profile fetched
+  /api/v1/files/import:
+    post:
+      summary: Import Excel file
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Import completed
+  /api/v1/files/export:
+    get:
+      summary: Export data to Excel
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Excel file stream

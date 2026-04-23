@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/home/ubuntu/ManagementSystem/logs/.483ea661b85701e65b92a77f3acc085f8ff3f330-audit.json",
+    "files": [
+        {
+            "date": 1776933692187,
+            "name": "/home/ubuntu/ManagementSystem/logs/application-2026-04-23.log",
+            "hash": "7b2d72d8ada4025114ddecc41f40d4f670a429115b96ad4498dc9b74b4425c45"
+        }
+    ],
+    "hashType": "sha256"
+}
