@@ -6,17 +6,17 @@ import {
   refreshController,
   resetMyPasswordController,
   verifyOtpAndResetController,
-} from "../controller/auth.controller";
-import { requireAuth } from "../middleware/auth.middleware";
-import { authRateLimit, otpRateLimit } from "../middleware/rateLimit.middleware";
-import { validate } from "../middleware/validate.middleware";
+} from "../../controller/auth.controller";
+import { requireAuth } from "../../middleware/auth.middleware";
+import { authRateLimit, otpRateLimit } from "../../middleware/rateLimit.middleware";
+import { validate } from "../../middleware/validate.middleware";
 import {
   forgotPasswordRequestSchema,
   loginSchema,
   refreshTokenSchema,
   resetPasswordSchema,
   verifyOtpAndResetSchema,
-} from "../validation/auth.validation";
+} from "../../validation/auth.validation";
 
 const authRouter = Router();
 

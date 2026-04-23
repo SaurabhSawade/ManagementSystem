@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { exportExcelController, importExcelController } from "../controller/import.controller";
-import { PERMISSIONS } from "../constants/permissions";
-import { ROLES } from "../constants/roles";
-import { requireAuth } from "../middleware/auth.middleware";
-import { requirePermission, requireRoles } from "../middleware/rbac.middleware";
-import { upload } from "../middleware/upload.middleware";
+import { exportExcelController, importExcelController } from "../../controller/import.controller";
+import { PERMISSIONS } from "../../constants/permissions";
+import { ROLES } from "../../constants/roles";
+import { requireAuth } from "../../middleware/auth.middleware";
+import { requirePermission, requireRoles } from "../../middleware/rbac.middleware";
+import { upload } from "../../middleware/upload.middleware";
 
 const importRouter = Router();
 

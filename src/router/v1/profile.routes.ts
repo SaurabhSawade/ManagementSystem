@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { getMyProfileController } from "../controller/profile.controller";
-import { requireAuth } from "../middleware/auth.middleware";
+import { getMyProfileController } from "../../controller/profile.controller";
+import { requireAuth } from "../../middleware/auth.middleware";
 
 const profileRouter = Router();
 

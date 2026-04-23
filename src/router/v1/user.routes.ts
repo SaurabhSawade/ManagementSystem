@@ -6,17 +6,17 @@ import {
   grantAdminController,
   revokeAdminController,
   unblockUserController,
-} from "../controller/user.controller";
-import { PERMISSIONS } from "../constants/permissions";
-import { ROLES } from "../constants/roles";
-import { requireAuth } from "../middleware/auth.middleware";
-import { requirePermission, requireRoles } from "../middleware/rbac.middleware";
-import { validate } from "../middleware/validate.middleware";
+} from "../../controller/user.controller";
+import { PERMISSIONS } from "../../constants/permissions";
+import { ROLES } from "../../constants/roles";
+import { requireAuth } from "../../middleware/auth.middleware";
+import { requirePermission, requireRoles } from "../../middleware/rbac.middleware";
+import { validate } from "../../middleware/validate.middleware";
 import {
   blockUserSchema,
   createUserSchema,
   resetUserPasswordSchema,
-} from "../validation/user.validation";
+} from "../../validation/user.validation";
 
 const userRouter = Router();
 
