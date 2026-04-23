@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../constants/httpStatus";
-import { buildResponse } from "../utils/apiResponse";
+import apiResponse from "../utils/apiResponse";
 
-export const notFoundHandler = (_req: Request, res: Response): void => {
+const notFoundHandler = (_req: Request, res: Response): void => {
   res.status(HTTP_STATUS.NOT_FOUND).json(
-    buildResponse({
+    apiResponse.buildResponse({
       status: HTTP_STATUS.NOT_FOUND,
       success: false,
       message: "Route not found",
@@ -12,3 +12,9 @@ export const notFoundHandler = (_req: Request, res: Response): void => {
     }),
   );
 };
+
+const notFoundMiddleware = {
+  notFoundHandler,
+};
+
+export default notFoundMiddleware;

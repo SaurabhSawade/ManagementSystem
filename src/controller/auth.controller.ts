@@ -1,59 +1,59 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../constants/httpStatus";
 import { MESSAGES } from "../constants/messages";
-import { asyncHandler } from "../utils/asyncHandler";
-import { buildResponse } from "../utils/apiResponse";
+import asyncUtils from "../utils/asyncHandler";
+import apiResponse from "../utils/apiResponse";
 import authService from "../service/auth.service";
 
-export const loginController = asyncHandler(async (req: Request, res: Response) => {
-  const result = await authService.login(req.body.username, req.body.password);
+const authController = {
+  login: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+    const result = await authService.login(req.body.username, req.body.password);
 
-  res.status(HTTP_STATUS.OK).json(
-    buildResponse({
-      status: HTTP_STATUS.OK,
-      success: true,
-      message: "Login successful",
-      type: "SUCCESS",
-      data: result,
-    }),
-  );
-});
+    res.status(HTTP_STATUS.OK).json(
+      apiResponse.buildResponse({
+        status: HTTP_STATUS.OK,
+        success: true,
+        message: "Login successful",
+        type: "SUCCESS",
+        data: result,
+      }),
+    );
+  }),
 
-export const logoutController = asyncHandler(async (req: Request, res: Response) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.slice(7);
+  logout: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.slice(7);
 
-  if (token) {
-    await authService.logout(token);
-  }
+    if (token) {
+      await authService.logout(token);
+    }
 
-  res.status(HTTP_STATUS.OK).json(
-    buildResponse({
-      status: HTTP_STATUS.OK,
-      success: true,
-      message: "Logout successful",
-      type: "SUCCESS",
-      data: null,
-    }),
-  );
-});
+    res.status(HTTP_STATUS.OK).json(
+      apiResponse.buildResponse({
+        status: HTTP_STATUS.OK,
+        success: true,
+        message: "Logout successful",
+        type: "SUCCESS",
+        data: null,
+      }),
+    );
+  }),
 
-export const refreshController = asyncHandler(async (req: Request, res: Response) => {
-  const tokens = await authService.refreshAuthTokens(req.body.refreshToken);
+  refresh: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+    const tokens = await authService.refreshAuthTokens(req.body.refreshToken);
 
-  res.status(HTTP_STATUS.OK).json(
-    buildResponse({
-      status: HTTP_STATUS.OK,
-      success: true,
-      message: "Token refreshed",
-      type: "SUCCESS",
-      data: tokens,
-    }),
-  );
-});
+    res.status(HTTP_STATUS.OK).json(
+      apiResponse.buildResponse({
+        status: HTTP_STATUS.OK,
+        success: true,
+        message: "Token refreshed",
+        type: "SUCCESS",
+        data: tokens,
+      }),
+    );
+  }),
 
-export const forgotPasswordController = asyncHandler(
-  async (req: Request, res: Response) => {
+  forgotPassword: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.requestForgotPasswordOtp({
       email: req.body.email,
       phone: req.body.phone,
@@ -61,7 +61,7 @@ export const forgotPasswordController = asyncHandler(
     });
 
     res.status(HTTP_STATUS.OK).json(
-      buildResponse({
+      apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
         message: MESSAGES.FORGOT_PASSWORD_OTP_SENT,
@@ -69,11 +69,9 @@ export const forgotPasswordController = asyncHandler(
         data: result,
       }),
     );
-  },
-);
+  }),
 
-export const verifyOtpAndResetController = asyncHandler(
-  async (req: Request, res: Response) => {
+  verifyOtpAndReset: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     await authService.verifyOtpAndResetPassword({
       email: req.body.email,
       phone: req.body.phone,
@@ -82,7 +80,7 @@ export const verifyOtpAndResetController = asyncHandler(
     });
 
     res.status(HTTP_STATUS.OK).json(
-      buildResponse({
+      apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
         message: MESSAGES.PASSWORD_RESET,
@@ -90,11 +88,9 @@ export const verifyOtpAndResetController = asyncHandler(
         data: null,
       }),
     );
-  },
-);
+  }),
 
-export const resetMyPasswordController = asyncHandler(
-  async (req: Request, res: Response) => {
+  resetMyPassword: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
     await authService.resetMyPassword({
       userId: req.auth!.userId,
       currentPassword: req.body.currentPassword,
@@ -102,7 +98,7 @@ export const resetMyPasswordController = asyncHandler(
     });
 
     res.status(HTTP_STATUS.OK).json(
-      buildResponse({
+      apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
         success: true,
         message: MESSAGES.PASSWORD_RESET,
@@ -110,5 +106,7 @@ export const resetMyPasswordController = asyncHandler(
         data: null,
       }),
     );
-  },
-);
+  }),
+};
+
+export default authController;

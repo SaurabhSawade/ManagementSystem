@@ -6,9 +6,9 @@ import path from "node:path";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import apiRouter from "./router";
-import { errorHandler } from "./middleware/error.middleware";
-import { notFoundHandler } from "./middleware/notFound.middleware";
-import { buildResponse } from "./utils/apiResponse";
+import errorMiddleware from "./middleware/error.middleware";
+import notFoundMiddleware from "./middleware/notFound.middleware";
+import apiResponse from "./utils/apiResponse";
 import { HTTP_STATUS } from "./constants/httpStatus";
 
 const app = express();
@@ -23,7 +23,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get("/health", (_req, res) => {
 	res.status(HTTP_STATUS.OK).json(
-		buildResponse({
+		apiResponse.buildResponse({
 			status: HTTP_STATUS.OK,
 			success: true,
 			message: "Server is healthy",
@@ -35,7 +35,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/v1", apiRouter);
 
-app.use(notFoundHandler);
-app.use(errorHandler);
+app.use(notFoundMiddleware.notFoundHandler);
+app.use(errorMiddleware.errorHandler);
 
 export default app;

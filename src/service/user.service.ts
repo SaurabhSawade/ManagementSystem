@@ -3,9 +3,9 @@ import { HTTP_STATUS } from "../constants/httpStatus";
 import { ROLES } from "../constants/roles";
 import userModel from "../model/user.model";
 import { AppError } from "../utils/appError";
-import { hashPassword } from "../utils/password";
+import passwordUtils from "../utils/password";
 
-export const createUser = async (params: {
+const createUser = async (params: {
   username: string;
   email?: string;
   phone?: string;
@@ -37,7 +37,7 @@ export const createUser = async (params: {
     username: params.username,
     email: params.email ?? null,
     phone: params.phone ?? null,
-    passwordHash: await hashPassword(params.password),
+    passwordHash: await passwordUtils.hashPassword(params.password),
     roleIds: roleRecords.map((role) => role.id),
   });
 
@@ -51,7 +51,7 @@ export const createUser = async (params: {
   return user;
 };
 
-export const blockUser = async (params: {
+const blockUser = async (params: {
   userId: string;
   reason: string;
   actorId: string;
@@ -79,7 +79,7 @@ export const blockUser = async (params: {
   return updated;
 };
 
-export const unblockUser = async (params: { userId: string; actorId: string }) => {
+const unblockUser = async (params: { userId: string; actorId: string }) => {
   const user = await userModel.findUserById(params.userId);
 
   if (!user) {
@@ -102,7 +102,7 @@ export const unblockUser = async (params: { userId: string; actorId: string }) =
   return updated;
 };
 
-export const forceResetPassword = async (params: {
+const forceResetPassword = async (params: {
   userId: string;
   newPassword: string;
   actorId: string;
@@ -113,7 +113,7 @@ export const forceResetPassword = async (params: {
     throw new AppError(HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
   }
 
-  await userModel.updatePassword(params.userId, await hashPassword(params.newPassword));
+  await userModel.updatePassword(params.userId, await passwordUtils.hashPassword(params.newPassword));
 
   await userModel.createPasswordResetRequest({
     userId: params.userId,
@@ -129,7 +129,7 @@ export const forceResetPassword = async (params: {
   });
 };
 
-export const grantAdmin = async (params: { userId: string; actorId: string }) => {
+const grantAdmin = async (params: { userId: string; actorId: string }) => {
   const adminRole = await userModel.findRoleByCode(ROLES.ADMIN);
   if (!adminRole) {
     throw new AppError(HTTP_STATUS.BAD_REQUEST, "Admin role not configured", "VALIDATION_ERROR");
@@ -144,7 +144,7 @@ export const grantAdmin = async (params: { userId: string; actorId: string }) =>
   });
 };
 
-export const revokeAdmin = async (params: { userId: string; actorId: string }) => {
+const revokeAdmin = async (params: { userId: string; actorId: string }) => {
   const adminRole = await userModel.findRoleByCode(ROLES.ADMIN);
   if (!adminRole) {
     throw new AppError(HTTP_STATUS.BAD_REQUEST, "Admin role not configured", "VALIDATION_ERROR");

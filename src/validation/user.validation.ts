@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const createUserSchema = z.object({
+const createUserSchema = z.object({
   body: z.object({
     username: z.string().min(3),
     email: z.string().email().optional(),
@@ -10,7 +10,7 @@ export const createUserSchema = z.object({
   }),
 });
 
-export const blockUserSchema = z.object({
+const blockUserSchema = z.object({
   params: z.object({
     userId: z.string().uuid(),
   }),
@@ -19,7 +19,7 @@ export const blockUserSchema = z.object({
   }),
 });
 
-export const resetUserPasswordSchema = z.object({
+const resetUserPasswordSchema = z.object({
   params: z.object({
     userId: z.string().uuid(),
   }),
@@ -27,3 +27,11 @@ export const resetUserPasswordSchema = z.object({
     newPassword: z.string().min(6),
   }),
 });
+
+const userValidation = {
+  createUserSchema,
+  blockUserSchema,
+  resetUserPasswordSchema,
+};
+
+export default userValidation;

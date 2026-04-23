@@ -2,16 +2,16 @@ import { NextFunction, Request, Response } from "express";
 import { prisma } from "../config/prisma";
 import { HTTP_STATUS } from "../constants/httpStatus";
 import { MESSAGES } from "../constants/messages";
-import { buildResponse } from "../utils/apiResponse";
+import apiResponse from "../utils/apiResponse";
 
-export const requireRoles = (allowedRoles: string[]) => {
+const requireRoles = (allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const roles = req.auth?.roles ?? [];
     const hasRole = roles.some((role) => allowedRoles.includes(role));
 
     if (!hasRole) {
       res.status(HTTP_STATUS.FORBIDDEN).json(
-        buildResponse({
+        apiResponse.buildResponse({
           status: HTTP_STATUS.FORBIDDEN,
           success: false,
           message: MESSAGES.FORBIDDEN,
@@ -25,13 +25,13 @@ export const requireRoles = (allowedRoles: string[]) => {
   };
 };
 
-export const requirePermission = (permissionCode: string) => {
+const requirePermission = (permissionCode: string) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const userId = req.auth?.userId;
 
     if (!userId) {
       res.status(HTTP_STATUS.UNAUTHORIZED).json(
-        buildResponse({
+        apiResponse.buildResponse({
           status: HTTP_STATUS.UNAUTHORIZED,
           success: false,
           message: MESSAGES.UNAUTHORIZED,
@@ -58,7 +58,7 @@ export const requirePermission = (permissionCode: string) => {
 
     if (!permission) {
       res.status(HTTP_STATUS.FORBIDDEN).json(
-        buildResponse({
+        apiResponse.buildResponse({
           status: HTTP_STATUS.FORBIDDEN,
           success: false,
           message: MESSAGES.FORBIDDEN,
@@ -71,3 +71,10 @@ export const requirePermission = (permissionCode: string) => {
     next();
   };
 };
+
+const rbacMiddleware = {
+  requireRoles,
+  requirePermission,
+};
+
+export default rbacMiddleware;

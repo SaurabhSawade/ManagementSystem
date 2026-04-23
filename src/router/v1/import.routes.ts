@@ -1,28 +1,28 @@
 import { Router } from "express";
-import { exportExcelController, importExcelController } from "../../controller/import.controller";
+import importController from "../../controller/import.controller";
 import { PERMISSIONS } from "../../constants/permissions";
 import { ROLES } from "../../constants/roles";
-import { requireAuth } from "../../middleware/auth.middleware";
-import { requirePermission, requireRoles } from "../../middleware/rbac.middleware";
-import { upload } from "../../middleware/upload.middleware";
+import authMiddleware from "../../middleware/auth.middleware";
+import rbacMiddleware from "../../middleware/rbac.middleware";
+import uploadMiddleware from "../../middleware/upload.middleware";
 
 const importRouter = Router();
 
-importRouter.use(requireAuth);
+importRouter.use(authMiddleware.requireAuth);
 
 importRouter.post(
   "/import",
-  requireRoles([ROLES.SUPER_ADMIN]),
-  requirePermission(PERMISSIONS.IMPORT_DATA),
-  upload.single("file"),
-  importExcelController,
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.IMPORT_DATA),
+  uploadMiddleware.upload.single("file"),
+  importController.importExcel,
 );
 
 importRouter.get(
   "/export",
-  requireRoles([ROLES.SUPER_ADMIN]),
-  requirePermission(PERMISSIONS.EXPORT_DATA),
-  exportExcelController,
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.EXPORT_DATA),
+  importController.exportExcel,
 );
 
 export default importRouter;

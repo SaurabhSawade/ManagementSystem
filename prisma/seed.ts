@@ -1,7 +1,7 @@
 import { prisma } from "../src/config/prisma";
 import { PERMISSIONS } from "../src/constants/permissions";
 import { ROLES } from "../src/constants/roles";
-import { hashPassword } from "../src/utils/password";
+import passwordUtils from "../src/utils/password";
 
 const DEFAULT_PASSWORD = "Password@123";
 const SUPER_ADMIN_PASSWORD = "SuperAdmin@123";
@@ -230,7 +230,7 @@ const seedUsers = async () => {
         username: userData.username,
         email: userData.email,
         phone: userData.phone,
-        passwordHash: await hashPassword(userData.password),
+        passwordHash: await passwordUtils.hashPassword(userData.password),
       },
     });
 

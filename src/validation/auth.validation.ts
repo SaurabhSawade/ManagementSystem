@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-export const loginSchema = z.object({
+const loginSchema = z.object({
   body: z.object({
     username: z.string().min(3),
     password: z.string().min(6),
   }),
 });
 
-export const forgotPasswordRequestSchema = z.object({
+const forgotPasswordRequestSchema = z.object({
   body: z
     .object({
       email: z.string().email().optional(),
@@ -19,7 +19,7 @@ export const forgotPasswordRequestSchema = z.object({
     }),
 });
 
-export const verifyOtpAndResetSchema = z.object({
+const verifyOtpAndResetSchema = z.object({
   body: z.object({
     email: z.string().email().optional(),
     phone: z.string().min(10).optional(),
@@ -28,15 +28,25 @@ export const verifyOtpAndResetSchema = z.object({
   }),
 });
 
-export const resetPasswordSchema = z.object({
+const resetPasswordSchema = z.object({
   body: z.object({
     currentPassword: z.string().min(6),
     newPassword: z.string().min(6),
   }),
 });
 
-export const refreshTokenSchema = z.object({
+const refreshTokenSchema = z.object({
   body: z.object({
     refreshToken: z.string().min(20),
   }),
 });
+
+const authValidation = {
+  loginSchema,
+  forgotPasswordRequestSchema,
+  verifyOtpAndResetSchema,
+  resetPasswordSchema,
+  refreshTokenSchema,
+};
+
+export default authValidation;

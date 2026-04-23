@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { AppError } from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
-import { hashPassword } from "../utils/password";
+import passwordUtils from "../utils/password";
 import { ROLES } from "../constants/roles";
 import importModel from "../model/import.model";
 
@@ -20,7 +20,7 @@ const readSheetRows = (workbook: XLSX.WorkBook, sheetName: string): Record<strin
   return XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: null });
 };
 
-export const importExcelData = async (params: {
+const importExcelData = async (params: {
   actorId: string;
   fileName: string;
   buffer: Buffer;
@@ -65,7 +65,7 @@ export const importExcelData = async (params: {
         email: row.email ? String(row.email) : null,
         phone: row.phone ? String(row.phone) : null,
         isActive: row.isActive !== false,
-        passwordHash: await hashPassword(String(row.password ?? "ChangeMe123")),
+        passwordHash: await passwordUtils.hashPassword(String(row.password ?? "ChangeMe123")),
       });
       summary.successRows += 1;
     } catch (error) {
@@ -317,7 +317,7 @@ export const importExcelData = async (params: {
   return summary;
 };
 
-export const exportExcelData = async () => {
+const exportExcelData = async () => {
   const { users, students, teachers, books, feeRecords, attendance, marks, results } =
     await importModel.getExportData();
 

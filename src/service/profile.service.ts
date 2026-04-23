@@ -2,7 +2,7 @@ import profileModel from "../model/profile.model";
 import { AppError } from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
-export const getMyProfile = async (userId: string) => {
+const getMyProfile = async (userId: string) => {
   const user = await profileModel.findProfileByUserId(userId);
 
   if (!user) {

@@ -1,6 +1,6 @@
 import { ApiResponse, ResponseType } from "../types/api";
 
-export const buildResponse = <T>(params: {
+const buildResponse = <T>(params: {
   status: number;
   success: boolean;
   message: string;
@@ -15,3 +15,9 @@ export const buildResponse = <T>(params: {
     data: params.data ?? null,
   };
 };
+
+const apiResponse = {
+  buildResponse,
+};
+
+export default apiResponse;

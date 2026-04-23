@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { z, ZodError } from "zod";
-import { buildResponse } from "../utils/apiResponse";
+import apiResponse from "../utils/apiResponse";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
-export const validate =
+const validate =
   (schema: z.ZodTypeAny) =>
   (req: Request, res: Response, next: NextFunction): void => {
     try {
@@ -12,7 +12,7 @@ export const validate =
     } catch (error) {
       if (error instanceof ZodError) {
         res.status(HTTP_STATUS.BAD_REQUEST).json(
-          buildResponse({
+          apiResponse.buildResponse({
             status: HTTP_STATUS.BAD_REQUEST,
             success: false,
             message: "Validation failed",
@@ -26,3 +26,9 @@ export const validate =
       next(error);
     }
   };
+
+const validateMiddleware = {
+  validate,
+};
+
+export default validateMiddleware;

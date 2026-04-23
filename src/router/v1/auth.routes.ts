@@ -1,45 +1,41 @@
 import { Router } from "express";
-import {
-  forgotPasswordController,
-  loginController,
-  logoutController,
-  refreshController,
-  resetMyPasswordController,
-  verifyOtpAndResetController,
-} from "../../controller/auth.controller";
-import { requireAuth } from "../../middleware/auth.middleware";
-import { authRateLimit, otpRateLimit } from "../../middleware/rateLimit.middleware";
-import { validate } from "../../middleware/validate.middleware";
-import {
-  forgotPasswordRequestSchema,
-  loginSchema,
-  refreshTokenSchema,
-  resetPasswordSchema,
-  verifyOtpAndResetSchema,
-} from "../../validation/auth.validation";
+import authController from "../../controller/auth.controller";
+import authMiddleware from "../../middleware/auth.middleware";
+import rateLimitMiddleware from "../../middleware/rateLimit.middleware";
+import validateMiddleware from "../../middleware/validate.middleware";
+import authValidation from "../../validation/auth.validation";
 
 const authRouter = Router();
 
-authRouter.post("/login", authRateLimit, validate(loginSchema), loginController);
-authRouter.post("/refresh", validate(refreshTokenSchema), refreshController);
+authRouter.post(
+  "/login",
+  rateLimitMiddleware.authRateLimit,
+  validateMiddleware.validate(authValidation.loginSchema),
+  authController.login,
+);
+authRouter.post(
+  "/refresh",
+  validateMiddleware.validate(authValidation.refreshTokenSchema),
+  authController.refresh,
+);
 authRouter.post(
   "/forgot-password/request-otp",
-  otpRateLimit,
-  validate(forgotPasswordRequestSchema),
-  forgotPasswordController,
+  rateLimitMiddleware.otpRateLimit,
+  validateMiddleware.validate(authValidation.forgotPasswordRequestSchema),
+  authController.forgotPassword,
 );
 authRouter.post(
   "/forgot-password/verify-otp",
-  otpRateLimit,
-  validate(verifyOtpAndResetSchema),
-  verifyOtpAndResetController,
+  rateLimitMiddleware.otpRateLimit,
+  validateMiddleware.validate(authValidation.verifyOtpAndResetSchema),
+  authController.verifyOtpAndReset,
 );
-authRouter.post("/logout", requireAuth, logoutController);
+authRouter.post("/logout", authMiddleware.requireAuth, authController.logout);
 authRouter.post(
   "/reset-password",
-  requireAuth,
-  validate(resetPasswordSchema),
-  resetMyPasswordController,
+  authMiddleware.requireAuth,
+  validateMiddleware.validate(authValidation.resetPasswordSchema),
+  authController.resetMyPassword,
 );
 
 export default authRouter;

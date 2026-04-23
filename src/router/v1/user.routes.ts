@@ -1,70 +1,59 @@
 import { Router } from "express";
-import {
-  blockUserController,
-  createUserController,
-  forceResetPasswordController,
-  grantAdminController,
-  revokeAdminController,
-  unblockUserController,
-} from "../../controller/user.controller";
+import userController from "../../controller/user.controller";
 import { PERMISSIONS } from "../../constants/permissions";
 import { ROLES } from "../../constants/roles";
-import { requireAuth } from "../../middleware/auth.middleware";
-import { requirePermission, requireRoles } from "../../middleware/rbac.middleware";
-import { validate } from "../../middleware/validate.middleware";
-import {
-  blockUserSchema,
-  createUserSchema,
-  resetUserPasswordSchema,
-} from "../../validation/user.validation";
+import authMiddleware from "../../middleware/auth.middleware";
+import rbacMiddleware from "../../middleware/rbac.middleware";
+import validateMiddleware from "../../middleware/validate.middleware";
+import userValidation from "../../validation/user.validation";
 
 const userRouter = Router();
 
-userRouter.use(requireAuth);
+userRouter.use(authMiddleware.requireAuth);
 
 userRouter.post(
   "/",
-  requireRoles([ROLES.SUPER_ADMIN]),
-  requirePermission(PERMISSIONS.USER_CREATE),
-  validate(createUserSchema),
-  createUserController,
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.USER_CREATE),
+  validateMiddleware.validate(userValidation.createUserSchema),
+  userController.createUser,
 );
 
 userRouter.patch(
   "/:userId/block",
-  requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
-  requirePermission(PERMISSIONS.USER_BLOCK),
-  validate(blockUserSchema),
-  blockUserController,
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.USER_BLOCK),
+  validateMiddleware.validate(userValidation.blockUserSchema),
+  userController.blockUser,
 );
 
 userRouter.patch(
   "/:userId/unblock",
-  requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
-  requirePermission(PERMISSIONS.USER_UNBLOCK),
-  unblockUserController,
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.USER_UNBLOCK),
+  userController.unblockUser,
 );
 
 userRouter.patch(
   "/:userId/reset-password",
-  requireRoles([ROLES.SUPER_ADMIN]),
-  requirePermission(PERMISSIONS.USER_RESET_PASSWORD),
-  validate(resetUserPasswordSchema),
-  forceResetPasswordController,
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.USER_RESET_PASSWORD),
+  validateMiddleware.validate(userValidation.resetUserPasswordSchema),
+  userController.forceResetPassword,
 );
 
 userRouter.patch(
   "/:userId/grant-admin",
-  requireRoles([ROLES.SUPER_ADMIN]),
-  requirePermission(PERMISSIONS.ADMIN_GRANT),
-  grantAdminController,
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.ADMIN_GRANT),
+  userController.grantAdmin,
 );
 
 userRouter.patch(
   "/:userId/revoke-admin",
-  requireRoles([ROLES.SUPER_ADMIN]),
-  requirePermission(PERMISSIONS.ADMIN_REVOKE),
-  revokeAdminController,
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.ADMIN_REVOKE),
+  userController.revokeAdmin,
 );
 
 export default userRouter;

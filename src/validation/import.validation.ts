@@ -1,5 +1,11 @@
 import { z } from "zod";
 
-export const importQuerySchema = z.object({
+const importQuerySchema = z.object({
   body: z.object({}).optional(),
 });
+
+const importValidation = {
+  importQuerySchema,
+};
+
+export default importValidation;

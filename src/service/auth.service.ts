@@ -2,26 +2,21 @@ import crypto from "node:crypto";
 import type { OtpChannel, Prisma } from "../generated/prisma/client";
 import authModel from "../model/auth.model";
 import { HTTP_STATUS } from "../constants/httpStatus";
-import { comparePassword, hashPassword } from "../utils/password";
+import passwordUtils from "../utils/password";
 import { AppError } from "../utils/appError";
-import { generateOtp, hashOtp } from "../utils/otp";
+import otpUtils from "../utils/otp";
 import { env } from "../config/env";
-import {
-  signAccessToken,
-  signRefreshToken,
-  verifyAccessToken,
-  verifyRefreshToken,
-} from "../utils/jwt";
+import jwtUtils from "../utils/jwt";
 import { logger } from "../config/logger";
 
-export const login = async (username: string, password: string) => {
+const login = async (username: string, password: string) => {
   const user = await authModel.findUserByUsername(username);
 
   if (!user || !user.isActive || user.isBlocked) {
     throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Invalid credentials", "AUTH_ERROR");
   }
 
-  const valid = await comparePassword(password, user.passwordHash);
+  const valid = await passwordUtils.comparePassword(password, user.passwordHash);
   if (!valid) {
     throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Invalid credentials", "AUTH_ERROR");
   }
@@ -39,8 +34,8 @@ export const login = async (username: string, password: string) => {
   };
 
   return {
-    accessToken: signAccessToken(payload),
-    refreshToken: signRefreshToken(payload),
+    accessToken: jwtUtils.signAccessToken(payload),
+    refreshToken: jwtUtils.signRefreshToken(payload),
     user: {
       id: user.id,
       username: user.username,
@@ -51,8 +46,8 @@ export const login = async (username: string, password: string) => {
   };
 };
 
-export const logout = async (accessToken: string) => {
-  const payload = verifyAccessToken(accessToken);
+const logout = async (accessToken: string) => {
+  const payload = jwtUtils.verifyAccessToken(accessToken);
   const tokenParts = accessToken.split(".");
   const payloadPart = tokenParts[1];
   const decoded = payloadPart
@@ -69,8 +64,8 @@ export const logout = async (accessToken: string) => {
   });
 };
 
-export const refreshAuthTokens = async (refreshToken: string) => {
-  const payload = verifyRefreshToken(refreshToken);
+const refreshAuthTokens = async (refreshToken: string) => {
+  const payload = jwtUtils.verifyRefreshToken(refreshToken);
 
   const blacklisted = await authModel.findTokenBlacklistByJti(payload.jti);
 
@@ -112,12 +107,12 @@ export const refreshAuthTokens = async (refreshToken: string) => {
   });
 
   return {
-    accessToken: signAccessToken(newPayload),
-    refreshToken: signRefreshToken(newPayload),
+    accessToken: jwtUtils.signAccessToken(newPayload),
+    refreshToken: jwtUtils.signRefreshToken(newPayload),
   };
 };
 
-export const requestForgotPasswordOtp = async (params: {
+const requestForgotPasswordOtp = async (params: {
   email?: string;
   phone?: string;
   channel: OtpChannel;
@@ -140,8 +135,8 @@ export const requestForgotPasswordOtp = async (params: {
     throw new AppError(HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
   }
 
-  const otp = generateOtp();
-  const otpHash = hashOtp(otp);
+  const otp = otpUtils.generateOtp();
+  const otpHash = otpUtils.hashOtp(otp);
   const expiresAt = new Date(Date.now() + env.OTP_EXPIRES_MINUTES * 60 * 1000);
 
   await authModel.createOtpVerification({
@@ -159,7 +154,7 @@ export const requestForgotPasswordOtp = async (params: {
   return { masked: params.channel === "EMAIL" ? user.email : user.phone };
 };
 
-export const verifyOtpAndResetPassword = async (params: {
+const verifyOtpAndResetPassword = async (params: {
   email?: string;
   phone?: string;
   otp: string;
@@ -191,7 +186,7 @@ export const verifyOtpAndResetPassword = async (params: {
     throw new AppError(HTTP_STATUS.TOO_MANY_REQUESTS, "OTP attempts exceeded", "VALIDATION_ERROR");
   }
 
-  const isValid = otpRecord.codeHash === hashOtp(params.otp);
+  const isValid = otpRecord.codeHash === otpUtils.hashOtp(params.otp);
 
   await authModel.incrementOtpAttempts(otpRecord.id, otpRecord.attempts + 1);
 
@@ -211,11 +206,11 @@ export const verifyOtpAndResetPassword = async (params: {
   await authModel.resetPasswordWithOtp({
     userId: user.id,
     otpRecordId: otpRecord.id,
-    passwordHash: await hashPassword(params.newPassword),
+    passwordHash: await passwordUtils.hashPassword(params.newPassword),
   });
 };
 
-export const resetMyPassword = async (params: {
+const resetMyPassword = async (params: {
   userId: string;
   currentPassword: string;
   newPassword: string;
@@ -226,7 +221,7 @@ export const resetMyPassword = async (params: {
     throw new AppError(HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
   }
 
-  const valid = await comparePassword(params.currentPassword, user.passwordHash);
+  const valid = await passwordUtils.comparePassword(params.currentPassword, user.passwordHash);
 
   if (!valid) {
     throw new AppError(
@@ -236,7 +231,7 @@ export const resetMyPassword = async (params: {
     );
   }
 
-  await authModel.updateUserPassword(user.id, await hashPassword(params.newPassword));
+  await authModel.updateUserPassword(user.id, await passwordUtils.hashPassword(params.newPassword));
 };
 
 const authService = {

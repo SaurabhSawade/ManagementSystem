@@ -3,10 +3,10 @@ import { prisma } from "../config/prisma";
 import { HTTP_STATUS } from "../constants/httpStatus";
 import { MESSAGES } from "../constants/messages";
 import { RoleCode } from "../constants/roles";
-import { buildResponse } from "../utils/apiResponse";
-import { verifyAccessToken } from "../utils/jwt";
+import apiResponse from "../utils/apiResponse";
+import jwtUtils from "../utils/jwt";
 
-export const requireAuth = async (
+const requireAuth = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -15,7 +15,7 @@ export const requireAuth = async (
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res.status(HTTP_STATUS.UNAUTHORIZED).json(
-      buildResponse({
+      apiResponse.buildResponse({
         status: HTTP_STATUS.UNAUTHORIZED,
         success: false,
         message: MESSAGES.UNAUTHORIZED,
@@ -28,7 +28,7 @@ export const requireAuth = async (
   const token = authHeader.slice(7);
 
   try {
-    const payload = verifyAccessToken(token);
+    const payload = jwtUtils.verifyAccessToken(token);
 
     const blacklisted = await prisma.tokenBlacklist.findUnique({
       where: { jti: payload.jti },
@@ -36,7 +36,7 @@ export const requireAuth = async (
 
     if (blacklisted) {
       res.status(HTTP_STATUS.UNAUTHORIZED).json(
-        buildResponse({
+        apiResponse.buildResponse({
           status: HTTP_STATUS.UNAUTHORIZED,
           success: false,
           message: "Token is blacklisted",
@@ -59,7 +59,7 @@ export const requireAuth = async (
 
     if (!user || !user.isActive || user.isBlocked) {
       res.status(HTTP_STATUS.UNAUTHORIZED).json(
-        buildResponse({
+        apiResponse.buildResponse({
           status: HTTP_STATUS.UNAUTHORIZED,
           success: false,
           message: MESSAGES.UNAUTHORIZED,
@@ -81,7 +81,7 @@ export const requireAuth = async (
     next();
   } catch {
     res.status(HTTP_STATUS.UNAUTHORIZED).json(
-      buildResponse({
+      apiResponse.buildResponse({
         status: HTTP_STATUS.UNAUTHORIZED,
         success: false,
         message: MESSAGES.UNAUTHORIZED,
@@ -90,3 +90,9 @@ export const requireAuth = async (
     );
   }
 };
+
+const authMiddleware = {
+  requireAuth,
+};
+
+export default authMiddleware;
