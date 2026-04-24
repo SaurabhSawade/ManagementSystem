@@ -22,10 +22,10 @@ const getResultById = async (resultId: string) => {
 const listResults = async (params: {
   page: number;
   limit: number;
-  studentId?: string;
-  examId?: string;
-  classRoomId?: string;
-  gradeFilter?: string;
+  studentId?: string | undefined;
+  examId?: string | undefined;
+  classRoomId?: string | undefined;
+  gradeFilter?: string | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

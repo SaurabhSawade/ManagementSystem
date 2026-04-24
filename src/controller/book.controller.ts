@@ -4,10 +4,18 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
 const createBook = asyncHandler(async (req: Request, res: Response) => {
   const { title, isbn, author, totalCopies } = req.body;
 
-  const book = await bookService.createBook(title, isbn, author, totalCopies);
+  const book = await bookService.createBook(
+    String(title),
+    String(isbn),
+    String(author),
+    Number(totalCopies),
+  );
 
   res.status(HTTP_STATUS.CREATED).json(
     apiResponse.buildResponse({
@@ -23,7 +31,7 @@ const createBook = asyncHandler(async (req: Request, res: Response) => {
 const getBook = asyncHandler(async (req: Request, res: Response) => {
   const { bookId } = req.params;
 
-  const book = await bookService.getBookById(bookId);
+  const book = await bookService.getBookById(String(bookId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -40,10 +48,10 @@ const updateBook = asyncHandler(async (req: Request, res: Response) => {
   const { bookId } = req.params;
   const { title, author, totalCopies } = req.body;
 
-  const book = await bookService.updateBook(bookId, {
-    title,
-    author,
-    totalCopies,
+  const book = await bookService.updateBook(String(bookId), {
+    title: typeof title === "string" ? title : undefined,
+    author: typeof author === "string" ? author : undefined,
+    totalCopies: typeof totalCopies === "number" ? totalCopies : Number(totalCopies),
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -63,11 +71,11 @@ const listBooks = asyncHandler(async (req: Request, res: Response) => {
   const result = await bookService.listBooks({
     page: Number(page),
     limit: Number(limit),
-    search: search as string,
-    author: author as string,
+    search: toQueryString(search),
+    author: toQueryString(author),
     availableOnly: availableOnly === "true",
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    sortBy: toQueryString(sortBy) ?? "title",
+    sortOrder: toQueryString(sortOrder) ?? "asc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -84,7 +92,7 @@ const listBooks = asyncHandler(async (req: Request, res: Response) => {
 const issueBook = asyncHandler(async (req: Request, res: Response) => {
   const { bookId, userId, dueDate } = req.body;
 
-  const issue = await bookService.issueBook(bookId, userId, new Date(dueDate));
+  const issue = await bookService.issueBook(String(bookId), String(userId), new Date(String(dueDate)));
 
   res.status(HTTP_STATUS.CREATED).json(
     apiResponse.buildResponse({
@@ -101,7 +109,7 @@ const returnBook = asyncHandler(async (req: Request, res: Response) => {
   const { bookIssueId } = req.params;
   const { fine } = req.body;
 
-  const issue = await bookService.returnBook(bookIssueId, fine);
+  const issue = await bookService.returnBook(String(bookIssueId), typeof fine === "number" ? fine : Number(fine));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -117,7 +125,7 @@ const returnBook = asyncHandler(async (req: Request, res: Response) => {
 const getBookIssue = asyncHandler(async (req: Request, res: Response) => {
   const { bookIssueId } = req.params;
 
-  const issue = await bookService.getBookIssueById(bookIssueId);
+  const issue = await bookService.getBookIssueById(String(bookIssueId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -136,11 +144,11 @@ const listBookIssues = asyncHandler(async (req: Request, res: Response) => {
   const result = await bookService.listBookIssues({
     page: Number(page),
     limit: Number(limit),
-    userId: userId as string,
-    bookId: bookId as string,
-    status: status as string,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    userId: toQueryString(userId),
+    bookId: toQueryString(bookId),
+    status: toQueryString(status),
+    sortBy: toQueryString(sortBy) ?? "issueDate",
+    sortOrder: toQueryString(sortOrder) ?? "desc",
   });
 
   res.status(HTTP_STATUS.OK).json(

@@ -89,7 +89,7 @@ const updateClassroom = async (
 const listClassrooms = async (params: {
   page: number;
   limit: number;
-  search?: string;
+  search?: string | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

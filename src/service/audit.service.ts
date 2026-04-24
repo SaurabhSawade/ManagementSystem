@@ -25,11 +25,11 @@ const getAuditLogById = async (auditId: string) => {
 const listAuditLogs = async (params: {
   page: number;
   limit: number;
-  action?: string;
-  actorId?: string;
-  targetId?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
+  action?: string | undefined;
+  actorId?: string | undefined;
+  targetId?: string | undefined;
+  dateFrom?: Date | undefined;
+  dateTo?: Date | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

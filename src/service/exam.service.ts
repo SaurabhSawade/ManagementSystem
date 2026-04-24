@@ -45,10 +45,10 @@ const updateExam = async (
 const listExams = async (params: {
   page: number;
   limit: number;
-  term?: string;
-  search?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
+  term?: string | undefined;
+  search?: string | undefined;
+  dateFrom?: Date | undefined;
+  dateTo?: Date | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

@@ -86,8 +86,8 @@ const updateTeacher = async (
 const listTeachers = async (params: {
   page: number;
   limit: number;
-  department?: string;
-  search?: string;
+  department?: string | undefined;
+  search?: string | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

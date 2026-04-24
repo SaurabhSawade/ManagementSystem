@@ -4,10 +4,16 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
+const toQueryDate = (value: unknown) =>
+  typeof value === "string" ? new Date(value) : undefined;
+
 const getAuditLog = asyncHandler(async (req: Request, res: Response) => {
   const { auditId } = req.params;
 
-  const log = await auditService.getAuditLogById(auditId);
+  const log = await auditService.getAuditLogById(String(auditId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -26,13 +32,13 @@ const listAuditLogs = asyncHandler(async (req: Request, res: Response) => {
   const result = await auditService.listAuditLogs({
     page: Number(page),
     limit: Number(limit),
-    action: action as string,
-    actorId: actorId as string,
-    targetId: targetId as string,
-    dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
-    dateTo: dateTo ? new Date(dateTo as string) : undefined,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    action: toQueryString(action),
+    actorId: toQueryString(actorId),
+    targetId: toQueryString(targetId),
+    dateFrom: toQueryDate(dateFrom),
+    dateTo: toQueryDate(dateTo),
+    sortBy: toQueryString(sortBy) ?? "createdAt",
+    sortOrder: toQueryString(sortOrder) ?? "desc",
   });
 
   res.status(HTTP_STATUS.OK).json(

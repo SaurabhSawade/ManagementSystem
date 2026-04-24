@@ -86,10 +86,10 @@ const updateMark = async (
 const listMarks = async (params: {
   page: number;
   limit: number;
-  studentId?: string;
-  subjectId?: string;
-  examId?: string;
-  classRoomId?: string;
+  studentId?: string | undefined;
+  subjectId?: string | undefined;
+  examId?: string | undefined;
+  classRoomId?: string | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

@@ -4,14 +4,20 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
+const toQueryDate = (value: unknown) =>
+  typeof value === "string" ? new Date(value) : undefined;
+
 const createFee = asyncHandler(async (req: Request, res: Response) => {
   const { userId, amount, dueDate, description } = req.body;
 
   const fee = await feeService.createFeeRecord(
-    userId,
-    amount,
-    new Date(dueDate),
-    description,
+    String(userId),
+    Number(amount),
+    new Date(String(dueDate)),
+    typeof description === "string" ? description : undefined,
   );
 
   res.status(HTTP_STATUS.CREATED).json(
@@ -28,7 +34,7 @@ const createFee = asyncHandler(async (req: Request, res: Response) => {
 const getFee = asyncHandler(async (req: Request, res: Response) => {
   const { feeId } = req.params;
 
-  const fee = await feeService.getFeeById(feeId);
+  const fee = await feeService.getFeeById(String(feeId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -45,11 +51,11 @@ const updateFee = asyncHandler(async (req: Request, res: Response) => {
   const { feeId } = req.params;
   const { amount, dueDate, status, description } = req.body;
 
-  const fee = await feeService.updateFeeRecord(feeId, {
-    amount,
-    dueDate: dueDate ? new Date(dueDate) : undefined,
-    status,
-    description,
+  const fee = await feeService.updateFeeRecord(String(feeId), {
+    amount: typeof amount === "number" ? amount : Number(amount),
+    dueDate: dueDate ? new Date(String(dueDate)) : undefined,
+    status: typeof status === "string" ? status : undefined,
+    description: typeof description === "string" ? description : undefined,
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -69,12 +75,12 @@ const listFees = asyncHandler(async (req: Request, res: Response) => {
   const result = await feeService.listFees({
     page: Number(page),
     limit: Number(limit),
-    userId: userId as string,
-    status: status as string,
-    dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
-    dateTo: dateTo ? new Date(dateTo as string) : undefined,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    userId: toQueryString(userId),
+    status: toQueryString(status),
+    dateFrom: toQueryDate(dateFrom),
+    dateTo: toQueryDate(dateTo),
+    sortBy: toQueryString(sortBy) ?? "dueDate",
+    sortOrder: toQueryString(sortOrder) ?? "asc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -92,7 +98,7 @@ const markFeeAsPaid = asyncHandler(async (req: Request, res: Response) => {
   const { feeId } = req.params;
   const { paidAmount, paymentMethod } = req.body;
 
-  await feeService.markFeeAsPaid(feeId, paidAmount, paymentMethod);
+  await feeService.markFeeAsPaid(String(feeId), typeof paidAmount === "number" ? paidAmount : Number(paidAmount), typeof paymentMethod === "string" ? paymentMethod : undefined);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -108,7 +114,7 @@ const markFeeAsPaid = asyncHandler(async (req: Request, res: Response) => {
 const getUserFeeStats = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
 
-  const stats = await feeService.getUserFeeStats(userId);
+  const stats = await feeService.getUserFeeStats(String(userId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

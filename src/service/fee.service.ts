@@ -61,10 +61,10 @@ const updateFeeRecord = async (
 const listFees = async (params: {
   page: number;
   limit: number;
-  userId?: string;
-  status?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
+  userId?: string | undefined;
+  status?: string | undefined;
+  dateFrom?: Date | undefined;
+  dateTo?: Date | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

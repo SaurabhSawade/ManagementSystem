@@ -4,10 +4,16 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
+const toQueryDate = (value: unknown) =>
+  typeof value === "string" ? new Date(value) : undefined;
+
 const createExam = asyncHandler(async (req: Request, res: Response) => {
   const { name, term, examDate } = req.body;
 
-  const exam = await examService.createExam(name, term, new Date(examDate));
+  const exam = await examService.createExam(String(name), String(term), new Date(String(examDate)));
 
   res.status(HTTP_STATUS.CREATED).json(
     apiResponse.buildResponse({
@@ -23,7 +29,7 @@ const createExam = asyncHandler(async (req: Request, res: Response) => {
 const getExam = asyncHandler(async (req: Request, res: Response) => {
   const { examId } = req.params;
 
-  const exam = await examService.getExamById(examId);
+  const exam = await examService.getExamById(String(examId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -40,10 +46,10 @@ const updateExam = asyncHandler(async (req: Request, res: Response) => {
   const { examId } = req.params;
   const { name, term, examDate } = req.body;
 
-  const exam = await examService.updateExam(examId, {
-    name,
-    term,
-    examDate: examDate ? new Date(examDate) : undefined,
+  const exam = await examService.updateExam(String(examId), {
+    name: typeof name === "string" ? name : undefined,
+    term: typeof term === "string" ? term : undefined,
+    examDate: examDate ? new Date(String(examDate)) : undefined,
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -63,12 +69,12 @@ const listExams = asyncHandler(async (req: Request, res: Response) => {
   const result = await examService.listExams({
     page: Number(page),
     limit: Number(limit),
-    term: term as string,
-    search: search as string,
-    dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
-    dateTo: dateTo ? new Date(dateTo as string) : undefined,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    term: toQueryString(term),
+    search: toQueryString(search),
+    dateFrom: toQueryDate(dateFrom),
+    dateTo: toQueryDate(dateTo),
+    sortBy: toQueryString(sortBy) ?? "examDate",
+    sortOrder: toQueryString(sortOrder) ?? "desc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -85,7 +91,7 @@ const listExams = asyncHandler(async (req: Request, res: Response) => {
 const deleteExam = asyncHandler(async (req: Request, res: Response) => {
   const { examId } = req.params;
 
-  await examService.deleteExam(examId);
+  await examService.deleteExam(String(examId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

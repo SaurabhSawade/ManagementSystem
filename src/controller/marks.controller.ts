@@ -4,16 +4,19 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
 const createMark = asyncHandler(async (req: Request, res: Response) => {
   const { studentId, classRoomId, subjectId, examId, marks, maxMarks } = req.body;
 
   const mark = await marksService.createMark(
-    studentId,
-    classRoomId,
-    subjectId,
-    examId,
-    marks,
-    maxMarks,
+    String(studentId),
+    String(classRoomId),
+    String(subjectId),
+    String(examId),
+    typeof marks === "number" ? marks : Number(marks),
+    typeof maxMarks === "number" ? maxMarks : Number(maxMarks),
   );
 
   res.status(HTTP_STATUS.CREATED).json(
@@ -31,9 +34,9 @@ const bulkCreateMarks = asyncHandler(async (req: Request, res: Response) => {
   const { examId, subjectId, classRoomId, marks } = req.body;
 
   const results = await marksService.bulkCreateMarks(
-    examId,
-    subjectId,
-    classRoomId,
+    String(examId),
+    String(subjectId),
+    String(classRoomId),
     marks,
   );
 
@@ -51,7 +54,7 @@ const bulkCreateMarks = asyncHandler(async (req: Request, res: Response) => {
 const getMark = asyncHandler(async (req: Request, res: Response) => {
   const { markId } = req.params;
 
-  const mark = await marksService.getMarkById(markId);
+  const mark = await marksService.getMarkById(String(markId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -68,7 +71,10 @@ const updateMark = asyncHandler(async (req: Request, res: Response) => {
   const { markId } = req.params;
   const { marks, maxMarks } = req.body;
 
-  const mark = await marksService.updateMark(markId, { marks, maxMarks });
+  const mark = await marksService.updateMark(String(markId), {
+    marks: typeof marks === "number" ? marks : Number(marks),
+    maxMarks: typeof maxMarks === "number" ? maxMarks : Number(maxMarks),
+  });
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -87,12 +93,12 @@ const listMarks = asyncHandler(async (req: Request, res: Response) => {
   const result = await marksService.listMarks({
     page: Number(page),
     limit: Number(limit),
-    studentId: studentId as string,
-    subjectId: subjectId as string,
-    examId: examId as string,
-    classRoomId: classRoomId as string,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    studentId: toQueryString(studentId),
+    subjectId: toQueryString(subjectId),
+    examId: toQueryString(examId),
+    classRoomId: toQueryString(classRoomId),
+    sortBy: toQueryString(sortBy) ?? "marks",
+    sortOrder: toQueryString(sortOrder) ?? "desc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -109,7 +115,7 @@ const listMarks = asyncHandler(async (req: Request, res: Response) => {
 const getStudentMarks = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
 
-  const marks = await marksService.getStudentMarks(studentId);
+  const marks = await marksService.getStudentMarks(String(studentId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

@@ -4,10 +4,13 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
 const createSubject = asyncHandler(async (req: Request, res: Response) => {
   const { name, code } = req.body;
 
-  const subject = await subjectService.createSubject(name, code);
+  const subject = await subjectService.createSubject(String(name), String(code));
 
   res.status(HTTP_STATUS.CREATED).json(
     apiResponse.buildResponse({
@@ -23,7 +26,7 @@ const createSubject = asyncHandler(async (req: Request, res: Response) => {
 const getSubject = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
 
-  const subject = await subjectService.getSubjectById(subjectId);
+  const subject = await subjectService.getSubjectById(String(subjectId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -40,7 +43,10 @@ const updateSubject = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
   const { name, code } = req.body;
 
-  const subject = await subjectService.updateSubject(subjectId, { name, code });
+  const subject = await subjectService.updateSubject(String(subjectId), {
+    name: typeof name === "string" ? name : undefined,
+    code: typeof code === "string" ? code : undefined,
+  });
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -59,9 +65,9 @@ const listSubjects = asyncHandler(async (req: Request, res: Response) => {
   const result = await subjectService.listSubjects({
     page: Number(page),
     limit: Number(limit),
-    search: search as string,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    search: toQueryString(search),
+    sortBy: toQueryString(sortBy) ?? "name",
+    sortOrder: toQueryString(sortOrder) ?? "asc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -78,7 +84,7 @@ const listSubjects = asyncHandler(async (req: Request, res: Response) => {
 const deleteSubject = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
 
-  await subjectService.deleteSubject(subjectId);
+  await subjectService.deleteSubject(String(subjectId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

@@ -4,10 +4,17 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
 const createTeacher = asyncHandler(async (req: Request, res: Response) => {
   const { userId, employeeId, department } = req.body;
 
-  const teacher = await teacherService.createTeacher(userId, employeeId, department);
+  const teacher = await teacherService.createTeacher(
+    String(userId),
+    String(employeeId),
+    typeof department === "string" ? department : undefined,
+  );
 
   res.status(HTTP_STATUS.CREATED).json(
     apiResponse.buildResponse({
@@ -23,7 +30,7 @@ const createTeacher = asyncHandler(async (req: Request, res: Response) => {
 const getTeacher = asyncHandler(async (req: Request, res: Response) => {
   const { teacherId } = req.params;
 
-  const teacher = await teacherService.getTeacherById(teacherId);
+  const teacher = await teacherService.getTeacherById(String(teacherId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -40,9 +47,9 @@ const updateTeacher = asyncHandler(async (req: Request, res: Response) => {
   const { teacherId } = req.params;
   const { employeeId, department } = req.body;
 
-  const teacher = await teacherService.updateTeacher(teacherId, {
-    employeeId,
-    department,
+  const teacher = await teacherService.updateTeacher(String(teacherId), {
+    employeeId: typeof employeeId === "string" ? employeeId : undefined,
+    department: department === undefined ? undefined : String(department),
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -62,10 +69,10 @@ const listTeachers = asyncHandler(async (req: Request, res: Response) => {
   const result = await teacherService.listTeachers({
     page: Number(page),
     limit: Number(limit),
-    department: department as string,
-    search: search as string,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    department: toQueryString(department),
+    search: toQueryString(search),
+    sortBy: toQueryString(sortBy) ?? "employeeId",
+    sortOrder: toQueryString(sortOrder) ?? "asc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -82,7 +89,7 @@ const listTeachers = asyncHandler(async (req: Request, res: Response) => {
 const deleteTeacher = asyncHandler(async (req: Request, res: Response) => {
   const { teacherId } = req.params;
 
-  await teacherService.deleteTeacher(teacherId);
+  await teacherService.deleteTeacher(String(teacherId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

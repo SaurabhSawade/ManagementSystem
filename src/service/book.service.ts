@@ -68,9 +68,9 @@ const updateBook = async (
 const listBooks = async (params: {
   page: number;
   limit: number;
-  search?: string;
-  author?: string;
-  availableOnly?: boolean;
+  search?: string | undefined;
+  author?: string | undefined;
+  availableOnly?: boolean | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {
@@ -198,9 +198,9 @@ const getBookIssueById = async (bookIssueId: string) => {
 const listBookIssues = async (params: {
   page: number;
   limit: number;
-  userId?: string;
-  bookId?: string;
-  status?: string;
+  userId?: string | undefined;
+  bookId?: string | undefined;
+  status?: string | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

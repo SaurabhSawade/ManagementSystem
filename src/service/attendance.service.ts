@@ -75,12 +75,12 @@ const updateAttendance = async (
 const listAttendance = async (params: {
   page: number;
   limit: number;
-  studentId?: string;
-  classRoomId?: string;
-  subjectId?: string;
-  status?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
+  studentId?: string | undefined;
+  classRoomId?: string | undefined;
+  subjectId?: string | undefined;
+  status?: string | undefined;
+  dateFrom?: Date | undefined;
+  dateTo?: Date | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

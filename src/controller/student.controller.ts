@@ -4,14 +4,17 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
 const createStudent = asyncHandler(async (req: Request, res: Response) => {
   const { userId, rollNumber, classRoomId, guardianName } = req.body;
 
   const student = await studentService.createStudent(
-    userId,
-    rollNumber,
-    classRoomId,
-    guardianName,
+    String(userId),
+    String(rollNumber),
+    String(classRoomId),
+    typeof guardianName === "string" ? guardianName : undefined,
   );
 
   res.status(HTTP_STATUS.CREATED).json(
@@ -28,7 +31,7 @@ const createStudent = asyncHandler(async (req: Request, res: Response) => {
 const getStudent = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
 
-  const student = await studentService.getStudentById(studentId);
+  const student = await studentService.getStudentById(String(studentId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -45,10 +48,10 @@ const updateStudent = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
   const { rollNumber, classRoomId, guardianName } = req.body;
 
-  const student = await studentService.updateStudent(studentId, {
-    rollNumber,
-    classRoomId,
-    guardianName,
+  const student = await studentService.updateStudent(String(studentId), {
+    rollNumber: typeof rollNumber === "string" ? rollNumber : undefined,
+    classRoomId: typeof classRoomId === "string" ? classRoomId : undefined,
+    guardianName: guardianName === undefined ? undefined : String(guardianName),
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -68,10 +71,10 @@ const listStudents = asyncHandler(async (req: Request, res: Response) => {
   const result = await studentService.listStudents({
     page: Number(page),
     limit: Number(limit),
-    classRoomId: classRoomId as string,
-    search: search as string,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    classRoomId: toQueryString(classRoomId),
+    search: toQueryString(search),
+    sortBy: toQueryString(sortBy) ?? "rollNumber",
+    sortOrder: toQueryString(sortOrder) ?? "asc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -88,7 +91,7 @@ const listStudents = asyncHandler(async (req: Request, res: Response) => {
 const deleteStudent = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
 
-  await studentService.deleteStudent(studentId);
+  await studentService.deleteStudent(String(studentId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

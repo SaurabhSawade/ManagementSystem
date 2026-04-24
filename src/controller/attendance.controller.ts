@@ -4,15 +4,21 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
+const toQueryDate = (value: unknown) =>
+  typeof value === "string" ? new Date(value) : undefined;
+
 const markAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { studentId, classRoomId, subjectId, date, status } = req.body;
 
   const attendance = await attendanceService.markAttendance(
-    studentId,
-    classRoomId,
-    subjectId,
-    new Date(date),
-    status,
+    String(studentId),
+    String(classRoomId),
+    String(subjectId),
+    new Date(String(date)),
+    String(status),
   );
 
   res.status(HTTP_STATUS.CREATED).json(
@@ -30,9 +36,9 @@ const bulkMarkAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { classRoomId, subjectId, date, attendance } = req.body;
 
   const results = await attendanceService.bulkMarkAttendance(
-    classRoomId,
-    subjectId,
-    new Date(date),
+    String(classRoomId),
+    String(subjectId),
+    new Date(String(date)),
     attendance,
   );
 
@@ -50,7 +56,7 @@ const bulkMarkAttendance = asyncHandler(async (req: Request, res: Response) => {
 const getAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { attendanceId } = req.params;
 
-  const attendance = await attendanceService.getAttendanceById(attendanceId);
+  const attendance = await attendanceService.getAttendanceById(String(attendanceId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -67,9 +73,9 @@ const updateAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { attendanceId } = req.params;
   const { status, date } = req.body;
 
-  const attendance = await attendanceService.updateAttendance(attendanceId, {
-    status,
-    date: date ? new Date(date) : undefined,
+  const attendance = await attendanceService.updateAttendance(String(attendanceId), {
+    status: typeof status === "string" ? status : undefined,
+    date: date ? new Date(String(date)) : undefined,
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -89,14 +95,14 @@ const listAttendance = asyncHandler(async (req: Request, res: Response) => {
   const result = await attendanceService.listAttendance({
     page: Number(page),
     limit: Number(limit),
-    studentId: studentId as string,
-    classRoomId: classRoomId as string,
-    subjectId: subjectId as string,
-    status: status as string,
-    dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
-    dateTo: dateTo ? new Date(dateTo as string) : undefined,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    studentId: toQueryString(studentId),
+    classRoomId: toQueryString(classRoomId),
+    subjectId: toQueryString(subjectId),
+    status: toQueryString(status),
+    dateFrom: toQueryDate(dateFrom),
+    dateTo: toQueryDate(dateTo),
+    sortBy: toQueryString(sortBy) ?? "date",
+    sortOrder: toQueryString(sortOrder) ?? "desc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -113,7 +119,7 @@ const listAttendance = asyncHandler(async (req: Request, res: Response) => {
 const getAttendanceStats = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
 
-  const stats = await attendanceService.getAttendanceStats(studentId);
+  const stats = await attendanceService.getAttendanceStats(String(studentId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

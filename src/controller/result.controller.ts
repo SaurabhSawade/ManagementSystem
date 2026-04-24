@@ -4,10 +4,13 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
 const getResult = asyncHandler(async (req: Request, res: Response) => {
   const { resultId } = req.params;
 
-  const result = await resultService.getResultById(resultId);
+  const result = await resultService.getResultById(String(resultId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -26,12 +29,12 @@ const listResults = asyncHandler(async (req: Request, res: Response) => {
   const results = await resultService.listResults({
     page: Number(page),
     limit: Number(limit),
-    studentId: studentId as string,
-    examId: examId as string,
-    classRoomId: classRoomId as string,
-    gradeFilter: gradeFilter as string,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    studentId: toQueryString(studentId),
+    examId: toQueryString(examId),
+    classRoomId: toQueryString(classRoomId),
+    gradeFilter: toQueryString(gradeFilter),
+    sortBy: toQueryString(sortBy) ?? "percentage",
+    sortOrder: toQueryString(sortOrder) ?? "desc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -48,7 +51,7 @@ const listResults = asyncHandler(async (req: Request, res: Response) => {
 const getStudentResults = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
 
-  const results = await resultService.getStudentResults(studentId);
+  const results = await resultService.getStudentResults(String(studentId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -65,9 +68,9 @@ const generateResult = asyncHandler(async (req: Request, res: Response) => {
   const { studentId, classRoomId, examId } = req.body;
 
   const result = await resultService.calculateAndCreateResult(
-    studentId,
-    classRoomId,
-    examId,
+    String(studentId),
+    String(classRoomId),
+    String(examId),
   );
 
   res.status(HTTP_STATUS.CREATED).json(

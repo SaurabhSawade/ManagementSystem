@@ -69,7 +69,7 @@ const updateSubject = async (
 const listSubjects = async (params: {
   page: number;
   limit: number;
-  search?: string;
+  search?: string | undefined;
   sortBy: string;
   sortOrder: string;
 }) => {

@@ -4,10 +4,13 @@ import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
+const toQueryString = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
 const createClassroom = asyncHandler(async (req: Request, res: Response) => {
   const { name, section } = req.body;
 
-  const classroom = await classroomService.createClassroom(name, section);
+  const classroom = await classroomService.createClassroom(String(name), String(section));
 
   res.status(HTTP_STATUS.CREATED).json(
     apiResponse.buildResponse({
@@ -23,7 +26,7 @@ const createClassroom = asyncHandler(async (req: Request, res: Response) => {
 const getClassroom = asyncHandler(async (req: Request, res: Response) => {
   const { classroomId } = req.params;
 
-  const classroom = await classroomService.getClassroomById(classroomId);
+  const classroom = await classroomService.getClassroomById(String(classroomId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -40,9 +43,9 @@ const updateClassroom = asyncHandler(async (req: Request, res: Response) => {
   const { classroomId } = req.params;
   const { name, section } = req.body;
 
-  const classroom = await classroomService.updateClassroom(classroomId, {
-    name,
-    section,
+  const classroom = await classroomService.updateClassroom(String(classroomId), {
+    name: typeof name === "string" ? name : undefined,
+    section: typeof section === "string" ? section : undefined,
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -62,9 +65,9 @@ const listClassrooms = asyncHandler(async (req: Request, res: Response) => {
   const result = await classroomService.listClassrooms({
     page: Number(page),
     limit: Number(limit),
-    search: search as string,
-    sortBy: sortBy as string,
-    sortOrder: sortOrder as string,
+    search: toQueryString(search),
+    sortBy: toQueryString(sortBy) ?? "name",
+    sortOrder: toQueryString(sortOrder) ?? "asc",
   });
 
   res.status(HTTP_STATUS.OK).json(
@@ -81,7 +84,7 @@ const listClassrooms = asyncHandler(async (req: Request, res: Response) => {
 const deleteClassroom = asyncHandler(async (req: Request, res: Response) => {
   const { classroomId } = req.params;
 
-  await classroomService.deleteClassroom(classroomId);
+  await classroomService.deleteClassroom(String(classroomId));
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
