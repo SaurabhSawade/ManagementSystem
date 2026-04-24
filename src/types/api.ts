@@ -10,7 +10,6 @@ export interface ApiResponse<T> {
   status: number;
   success: boolean;
   message: string;
-  type: ResponseType;
   data: T | null;
 }
 

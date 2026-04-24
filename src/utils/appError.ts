@@ -10,3 +10,5 @@ export class AppError extends Error {
     this.type = type;
   }
 }
+
+export default AppError;

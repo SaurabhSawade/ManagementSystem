@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../constants/httpStatus";
 import { MESSAGES } from "../constants/messages";
-import asyncUtils from "../utils/asyncHandler";
+import asyncHandler from "../utils/asyncHandler";
 import apiResponse from "../utils/apiResponse";
 import importService from "../service/import.service";
 
 const importController = {
-  importExcel: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  importExcel: asyncHandler(async (req: Request, res: Response) => {
     if (!req.file) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json(
         apiResponse.buildResponse({
@@ -36,7 +36,7 @@ const importController = {
     );
   }),
 
-  exportExcel: asyncUtils.asyncHandler(async (_req: Request, res: Response) => {
+  exportExcel: asyncHandler(async (_req: Request, res: Response) => {
     const buffer = await importService.exportExcelData();
 
     res.setHeader(

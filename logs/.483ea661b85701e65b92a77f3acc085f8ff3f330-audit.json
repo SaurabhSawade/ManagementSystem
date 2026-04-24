@@ -9,6 +9,11 @@
             "date": 1776933692187,
             "name": "/home/ubuntu/ManagementSystem/logs/application-2026-04-23.log",
             "hash": "7b2d72d8ada4025114ddecc41f40d4f670a429115b96ad4498dc9b74b4425c45"
+        },
+        {
+            "date": 1777010619011,
+            "name": "/home/ubuntu/ManagementSystem/logs/application-2026-04-24.log",
+            "hash": "74a0f3c25b6fc732a3f1131d988b4d01ab7dac1610c3e60bb9a1ee7f39cd3eec"
         }
     ],
     "hashType": "sha256"

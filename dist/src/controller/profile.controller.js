@@ -9,9 +9,9 @@ const asyncHandler_1 = __importDefault(require("../utils/asyncHandler"));
 const apiResponse_1 = __importDefault(require("../utils/apiResponse"));
 const profile_service_1 = __importDefault(require("../service/profile.service"));
 const profileController = {
-    getMyProfile: asyncHandler_1.default.asyncHandler(async (req, res) => {
+    getMyProfile: (0, asyncHandler_1.default)(async (req, res) => {
         const profile = await profile_service_1.default.getMyProfile(req.auth.userId);
-        res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
+        return res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.OK,
             success: true,
             message: messages_1.MESSAGES.PROFILE_FETCHED,

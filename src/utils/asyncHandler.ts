@@ -6,8 +6,4 @@ const asyncHandler =
     fn(req, res, next).catch(next);
   };
 
-const asyncUtils = {
-  asyncHandler,
-};
-
-export default asyncUtils;
+export default asyncHandler;

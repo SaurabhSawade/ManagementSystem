@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../constants/httpStatus";
 import { MESSAGES } from "../constants/messages";
-import asyncUtils from "../utils/asyncHandler";
+import asyncHandler from "../utils/asyncHandler";
 import apiResponse from "../utils/apiResponse";
 import userService from "../service/user.service";
 
 const userController = {
-  createUser: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  createUser: asyncHandler(async (req: Request, res: Response) => {
     const user = await userService.createUser({
       username: req.body.username,
       email: req.body.email,
@@ -27,7 +27,7 @@ const userController = {
     );
   }),
 
-  blockUser: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  blockUser: asyncHandler(async (req: Request, res: Response) => {
     const user = await userService.blockUser({
       userId: String(req.params.userId),
       reason: req.body.reason,
@@ -45,7 +45,7 @@ const userController = {
     );
   }),
 
-  unblockUser: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  unblockUser: asyncHandler(async (req: Request, res: Response) => {
     const user = await userService.unblockUser({
       userId: String(req.params.userId),
       actorId: req.auth!.userId,
@@ -62,7 +62,7 @@ const userController = {
     );
   }),
 
-  forceResetPassword: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  forceResetPassword: asyncHandler(async (req: Request, res: Response) => {
     await userService.forceResetPassword({
       userId: String(req.params.userId),
       newPassword: req.body.newPassword,
@@ -80,7 +80,7 @@ const userController = {
     );
   }),
 
-  grantAdmin: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  grantAdmin: asyncHandler(async (req: Request, res: Response) => {
     await userService.grantAdmin({ userId: String(req.params.userId), actorId: req.auth!.userId });
 
     return res.status(HTTP_STATUS.OK).json(
@@ -94,7 +94,7 @@ const userController = {
     );
   }),
 
-  revokeAdmin: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  revokeAdmin: asyncHandler(async (req: Request, res: Response) => {
     await userService.revokeAdmin({ userId: String(req.params.userId), actorId: req.auth!.userId });
 
     return res.status(HTTP_STATUS.OK).json(

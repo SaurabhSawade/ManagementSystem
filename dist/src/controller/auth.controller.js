@@ -9,9 +9,9 @@ const asyncHandler_1 = __importDefault(require("../utils/asyncHandler"));
 const apiResponse_1 = __importDefault(require("../utils/apiResponse"));
 const auth_service_1 = __importDefault(require("../service/auth.service"));
 const authController = {
-    login: asyncHandler_1.default.asyncHandler(async (req, res) => {
+    login: (0, asyncHandler_1.default)(async (req, res) => {
         const result = await auth_service_1.default.login(req.body.username, req.body.password);
-        res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
+        return res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.OK,
             success: true,
             message: "Login successful",
@@ -19,13 +19,13 @@ const authController = {
             data: result,
         }));
     }),
-    logout: asyncHandler_1.default.asyncHandler(async (req, res) => {
+    logout: (0, asyncHandler_1.default)(async (req, res) => {
         const authHeader = req.headers.authorization;
         const token = authHeader?.slice(7);
         if (token) {
             await auth_service_1.default.logout(token);
         }
-        res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
+        return res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.OK,
             success: true,
             message: "Logout successful",
@@ -33,9 +33,9 @@ const authController = {
             data: null,
         }));
     }),
-    refresh: asyncHandler_1.default.asyncHandler(async (req, res) => {
+    refresh: (0, asyncHandler_1.default)(async (req, res) => {
         const tokens = await auth_service_1.default.refreshAuthTokens(req.body.refreshToken);
-        res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
+        return res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.OK,
             success: true,
             message: "Token refreshed",
@@ -43,13 +43,13 @@ const authController = {
             data: tokens,
         }));
     }),
-    forgotPassword: asyncHandler_1.default.asyncHandler(async (req, res) => {
+    forgotPassword: (0, asyncHandler_1.default)(async (req, res) => {
         const result = await auth_service_1.default.requestForgotPasswordOtp({
             email: req.body.email,
             phone: req.body.phone,
             channel: req.body.channel,
         });
-        res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
+        return res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.OK,
             success: true,
             message: messages_1.MESSAGES.FORGOT_PASSWORD_OTP_SENT,
@@ -57,14 +57,14 @@ const authController = {
             data: result,
         }));
     }),
-    verifyOtpAndReset: asyncHandler_1.default.asyncHandler(async (req, res) => {
+    verifyOtpAndReset: (0, asyncHandler_1.default)(async (req, res) => {
         await auth_service_1.default.verifyOtpAndResetPassword({
             email: req.body.email,
             phone: req.body.phone,
             otp: req.body.otp,
             newPassword: req.body.newPassword,
         });
-        res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
+        return res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.OK,
             success: true,
             message: messages_1.MESSAGES.PASSWORD_RESET,
@@ -72,13 +72,13 @@ const authController = {
             data: null,
         }));
     }),
-    resetMyPassword: asyncHandler_1.default.asyncHandler(async (req, res) => {
+    resetMyPassword: (0, asyncHandler_1.default)(async (req, res) => {
         await auth_service_1.default.resetMyPassword({
             userId: req.auth.userId,
             currentPassword: req.body.currentPassword,
             newPassword: req.body.newPassword,
         });
-        res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
+        return res.status(httpStatus_1.HTTP_STATUS.OK).json(apiResponse_1.default.buildResponse({
             status: httpStatus_1.HTTP_STATUS.OK,
             success: true,
             message: messages_1.MESSAGES.PASSWORD_RESET,

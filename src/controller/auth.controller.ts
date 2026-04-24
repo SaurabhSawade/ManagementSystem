@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../constants/httpStatus";
 import { MESSAGES } from "../constants/messages";
-import asyncUtils from "../utils/asyncHandler";
+import asyncHandler from "../utils/asyncHandler";
 import apiResponse from "../utils/apiResponse";
 import authService from "../service/auth.service";
 
 const authController = {
-  login: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  login: asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.login(req.body.username, req.body.password);
 
     return res.status(HTTP_STATUS.OK).json(
@@ -20,7 +20,7 @@ const authController = {
     );
   }),
 
-  logout: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  logout: asyncHandler(async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.slice(7);
 
@@ -39,7 +39,7 @@ const authController = {
     );
   }),
 
-  refresh: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  refresh: asyncHandler(async (req: Request, res: Response) => {
     const tokens = await authService.refreshAuthTokens(req.body.refreshToken);
 
     return res.status(HTTP_STATUS.OK).json(
@@ -53,7 +53,7 @@ const authController = {
     );
   }),
 
-  forgotPassword: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  forgotPassword: asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.requestForgotPasswordOtp({
       email: req.body.email,
       phone: req.body.phone,
@@ -71,7 +71,7 @@ const authController = {
     );
   }),
 
-  verifyOtpAndReset: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  verifyOtpAndReset: asyncHandler(async (req: Request, res: Response) => {
     await authService.verifyOtpAndResetPassword({
       email: req.body.email,
       phone: req.body.phone,
@@ -90,7 +90,7 @@ const authController = {
     );
   }),
 
-  resetMyPassword: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  resetMyPassword: asyncHandler(async (req: Request, res: Response) => {
     await authService.resetMyPassword({
       userId: req.auth!.userId,
       currentPassword: req.body.currentPassword,

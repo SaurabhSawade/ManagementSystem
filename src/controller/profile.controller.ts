@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { HTTP_STATUS } from "../constants/httpStatus";
 import { MESSAGES } from "../constants/messages";
-import asyncUtils from "../utils/asyncHandler";
+import asyncHandler from "../utils/asyncHandler";
 import apiResponse from "../utils/apiResponse";
 import profileService from "../service/profile.service";
 
 const profileController = {
-  getMyProfile: asyncUtils.asyncHandler(async (req: Request, res: Response) => {
+  getMyProfile: asyncHandler(async (req: Request, res: Response) => {
     const profile = await profileService.getMyProfile(req.auth!.userId);
 
     return res.status(HTTP_STATUS.OK).json(

@@ -5,7 +5,6 @@ const buildResponse = (params) => {
         status: params.status,
         success: params.success,
         message: params.message,
-        type: params.type,
         data: params.data ?? null,
     };
 };
