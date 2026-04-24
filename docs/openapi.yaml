@@ -1,17 +1,62 @@
 openapi: 3.0.3
 info:
   title: College Management Backend API
-  version: 1.0.0
-  description: API documentation for authentication, user management, profile, and import/export workflows.
+  version: 2.0.0
+  description: |
+    Full API documentation for authentication, user administration, academic operations,
+    finance, library workflows, audit logs, and file import/export.
 servers:
   - url: http://localhost:4000
     description: Local development
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Profile
+  - name: Students
+  - name: Teachers
+  - name: Classrooms
+  - name: Subjects
+  - name: Attendance
+  - name: Marks
+  - name: Exams
+  - name: Results
+  - name: Fees
+  - name: Books
+  - name: Audit
+  - name: Files
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    LimitParam:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    SortOrderParam:
+      in: query
+      name: sortOrder
+      schema:
+        type: string
+        enum: [asc, desc]
+
   schemas:
     ApiResponse:
       type: object
@@ -25,11 +70,9 @@ components:
         message:
           type: string
           example: Request completed successfully
-        type:
-          type: string
-          example: SUCCESS
         data:
           nullable: true
+
     LoginBody:
       type: object
       required: [username, password]
@@ -40,12 +83,14 @@ components:
         password:
           type: string
           example: SuperAdmin@123
+
     RefreshBody:
       type: object
       required: [refreshToken]
       properties:
         refreshToken:
           type: string
+
     ForgotPasswordBody:
       type: object
       required: [channel]
@@ -58,6 +103,7 @@ components:
         channel:
           type: string
           enum: [EMAIL, SMS]
+
     VerifyOtpBody:
       type: object
       required: [otp, newPassword]
@@ -73,6 +119,7 @@ components:
         newPassword:
           type: string
           example: NewStrongPassword@123
+
     ResetMyPasswordBody:
       type: object
       required: [currentPassword, newPassword]
@@ -81,6 +128,7 @@ components:
           type: string
         newPassword:
           type: string
+
     CreateUserBody:
       type: object
       required: [username, password, roles]
@@ -99,87 +147,426 @@ components:
           items:
             type: string
             enum: [SUPER_ADMIN, ADMIN, STUDENT, TEACHER, ACCOUNTANT, LIBRARY_STAFF]
+
     BlockUserBody:
       type: object
       required: [reason]
       properties:
         reason:
           type: string
+
     ResetUserPasswordBody:
       type: object
       required: [newPassword]
       properties:
         newPassword:
           type: string
+
+    CreateStudentBody:
+      type: object
+      required: [userId, rollNumber, classRoomId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        rollNumber:
+          type: string
+        classRoomId:
+          type: string
+          format: uuid
+        guardianName:
+          type: string
+
+    UpdateStudentBody:
+      type: object
+      properties:
+        rollNumber:
+          type: string
+        classRoomId:
+          type: string
+          format: uuid
+        guardianName:
+          type: string
+
+    CreateTeacherBody:
+      type: object
+      required: [userId, employeeId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        employeeId:
+          type: string
+        department:
+          type: string
+
+    UpdateTeacherBody:
+      type: object
+      properties:
+        employeeId:
+          type: string
+        department:
+          type: string
+
+    CreateClassroomBody:
+      type: object
+      required: [name, section]
+      properties:
+        name:
+          type: string
+        section:
+          type: string
+
+    UpdateClassroomBody:
+      type: object
+      properties:
+        name:
+          type: string
+        section:
+          type: string
+
+    CreateSubjectBody:
+      type: object
+      required: [name, code]
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+
+    UpdateSubjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+
+    AttendanceStatus:
+      type: string
+      enum: [PRESENT, ABSENT, LEAVE, SICK]
+
+    CreateAttendanceBody:
+      type: object
+      required: [studentId, classRoomId, subjectId, date, status]
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        classRoomId:
+          type: string
+          format: uuid
+        subjectId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/AttendanceStatus'
+
+    BulkAttendanceBody:
+      type: object
+      required: [classRoomId, subjectId, date, attendance]
+      properties:
+        classRoomId:
+          type: string
+          format: uuid
+        subjectId:
+          type: string
+          format: uuid
+        date:
+          type: string
+          format: date-time
+        attendance:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [studentId, status]
+            properties:
+              studentId:
+                type: string
+                format: uuid
+              status:
+                $ref: '#/components/schemas/AttendanceStatus'
+
+    UpdateAttendanceBody:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/AttendanceStatus'
+        date:
+          type: string
+          format: date-time
+
+    CreateMarkBody:
+      type: object
+      required: [studentId, classRoomId, subjectId, examId, marks, maxMarks]
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        classRoomId:
+          type: string
+          format: uuid
+        subjectId:
+          type: string
+          format: uuid
+        examId:
+          type: string
+          format: uuid
+        marks:
+          type: number
+          minimum: 0
+        maxMarks:
+          type: number
+          minimum: 0
+
+    BulkMarksBody:
+      type: object
+      required: [examId, subjectId, classRoomId, marks]
+      properties:
+        examId:
+          type: string
+          format: uuid
+        subjectId:
+          type: string
+          format: uuid
+        classRoomId:
+          type: string
+          format: uuid
+        marks:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [studentId, marks, maxMarks]
+            properties:
+              studentId:
+                type: string
+                format: uuid
+              marks:
+                type: number
+                minimum: 0
+              maxMarks:
+                type: number
+                minimum: 0
+
+    UpdateMarkBody:
+      type: object
+      properties:
+        marks:
+          type: number
+          minimum: 0
+        maxMarks:
+          type: number
+          minimum: 0
+
+    CreateExamBody:
+      type: object
+      required: [name, term, examDate]
+      properties:
+        name:
+          type: string
+        term:
+          type: string
+        examDate:
+          type: string
+          format: date-time
+
+    UpdateExamBody:
+      type: object
+      properties:
+        name:
+          type: string
+        term:
+          type: string
+        examDate:
+          type: string
+          format: date-time
+
+    GenerateResultBody:
+      type: object
+      required: [studentId, examId]
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        examId:
+          type: string
+          format: uuid
+
+    CreateFeeBody:
+      type: object
+      required: [userId, amount, dueDate]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          minimum: 0
+        dueDate:
+          type: string
+          format: date-time
+        description:
+          type: string
+
+    UpdateFeeBody:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 0
+        dueDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [PENDING, PAID, PARTIAL, OVERDUE]
+        description:
+          type: string
+
+    MarkFeePaidBody:
+      type: object
+      required: [paidAmount]
+      properties:
+        paidAmount:
+          type: number
+          minimum: 0
+        paymentMethod:
+          type: string
+          enum: [CASH, CHEQUE, ONLINE, BANK_TRANSFER]
+
+    CreateBookBody:
+      type: object
+      required: [title, isbn, author, totalCopies]
+      properties:
+        title:
+          type: string
+        isbn:
+          type: string
+        author:
+          type: string
+        totalCopies:
+          type: integer
+          minimum: 1
+
+    UpdateBookBody:
+      type: object
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        totalCopies:
+          type: integer
+          minimum: 1
+
+    IssueBookBody:
+      type: object
+      required: [bookId, userId, dueDate]
+      properties:
+        bookId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        dueDate:
+          type: string
+          format: date-time
+
+    ReturnBookBody:
+      type: object
+      properties:
+        fine:
+          type: number
+          minimum: 0
+
 paths:
   /health:
     get:
+      tags: [Health]
       summary: Health check
       responses:
-        "200":
+        '200':
           description: Server is healthy
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponse"
+                $ref: '#/components/schemas/ApiResponse'
+
   /api/v1/auth/login:
     post:
+      tags: [Auth]
       summary: Login
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginBody"
+              $ref: '#/components/schemas/LoginBody'
       responses:
-        "200":
+        '200':
           description: Login successful
+
   /api/v1/auth/refresh:
     post:
+      tags: [Auth]
       summary: Refresh tokens
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RefreshBody"
+              $ref: '#/components/schemas/RefreshBody'
       responses:
-        "200":
+        '200':
           description: Token refreshed
+
   /api/v1/auth/logout:
     post:
+      tags: [Auth]
       summary: Logout and blacklist current access token
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Logout successful
+
   /api/v1/auth/forgot-password/request-otp:
     post:
+      tags: [Auth]
       summary: Request OTP for forgot password
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ForgotPasswordBody"
+              $ref: '#/components/schemas/ForgotPasswordBody'
       responses:
-        "200":
+        '200':
           description: OTP sent
+
   /api/v1/auth/forgot-password/verify-otp:
     post:
+      tags: [Auth]
       summary: Verify OTP and reset password
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VerifyOtpBody"
+              $ref: '#/components/schemas/VerifyOtpBody'
       responses:
-        "200":
+        '200':
           description: Password reset successful
+
   /api/v1/auth/reset-password:
     post:
+      tags: [Auth]
       summary: Reset own password
       security:
         - bearerAuth: []
@@ -188,12 +575,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ResetMyPasswordBody"
+              $ref: '#/components/schemas/ResetMyPasswordBody'
       responses:
-        "200":
+        '200':
           description: Password reset successful
+
   /api/v1/users:
     post:
+      tags: [Users]
       summary: Super admin creates a user
       security:
         - bearerAuth: []
@@ -202,12 +591,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateUserBody"
+              $ref: '#/components/schemas/CreateUserBody'
       responses:
-        "201":
+        '201':
           description: User created
+
   /api/v1/users/{userId}/block:
     patch:
+      tags: [Users]
       summary: Block a user
       security:
         - bearerAuth: []
@@ -223,12 +614,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BlockUserBody"
+              $ref: '#/components/schemas/BlockUserBody'
       responses:
-        "200":
+        '200':
           description: User blocked
+
   /api/v1/users/{userId}/unblock:
     patch:
+      tags: [Users]
       summary: Unblock a user
       security:
         - bearerAuth: []
@@ -240,10 +633,12 @@ paths:
             type: string
             format: uuid
       responses:
-        "200":
+        '200':
           description: User unblocked
+
   /api/v1/users/{userId}/reset-password:
     patch:
+      tags: [Users]
       summary: Force reset user password
       security:
         - bearerAuth: []
@@ -259,12 +654,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ResetUserPasswordBody"
+              $ref: '#/components/schemas/ResetUserPasswordBody'
       responses:
-        "200":
+        '200':
           description: Password reset
+
   /api/v1/users/{userId}/grant-admin:
     patch:
+      tags: [Users]
       summary: Grant admin role
       security:
         - bearerAuth: []
@@ -276,10 +673,12 @@ paths:
             type: string
             format: uuid
       responses:
-        "200":
+        '200':
           description: Admin granted
+
   /api/v1/users/{userId}/revoke-admin:
     patch:
+      tags: [Users]
       summary: Revoke admin role
       security:
         - bearerAuth: []
@@ -291,18 +690,1206 @@ paths:
             type: string
             format: uuid
       responses:
-        "200":
+        '200':
           description: Admin revoked
+
   /api/v1/profile/me:
     get:
+      tags: [Profile]
       summary: Get logged-in user profile
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Profile fetched
+
+  /api/v1/students:
+    post:
+      tags: [Students]
+      summary: Create student profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudentBody'
+      responses:
+        '201':
+          description: Student created
+    get:
+      tags: [Students]
+      summary: List students
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: classRoomId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [rollNumber, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Students fetched
+
+  /api/v1/students/{studentId}:
+    get:
+      tags: [Students]
+      summary: Get student by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student fetched
+    patch:
+      tags: [Students]
+      summary: Update student
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStudentBody'
+      responses:
+        '200':
+          description: Student updated
+    delete:
+      tags: [Students]
+      summary: Delete student
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student deleted
+
+  /api/v1/teachers:
+    post:
+      tags: [Teachers]
+      summary: Create teacher profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeacherBody'
+      responses:
+        '201':
+          description: Teacher created
+    get:
+      tags: [Teachers]
+      summary: List teachers
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: department
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [employeeId, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Teachers fetched
+
+  /api/v1/teachers/{teacherId}:
+    get:
+      tags: [Teachers]
+      summary: Get teacher by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: teacherId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Teacher fetched
+    patch:
+      tags: [Teachers]
+      summary: Update teacher
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: teacherId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTeacherBody'
+      responses:
+        '200':
+          description: Teacher updated
+    delete:
+      tags: [Teachers]
+      summary: Delete teacher
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: teacherId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Teacher deleted
+
+  /api/v1/classrooms:
+    post:
+      tags: [Classrooms]
+      summary: Create classroom
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClassroomBody'
+      responses:
+        '201':
+          description: Classroom created
+    get:
+      tags: [Classrooms]
+      summary: List classrooms
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [name, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Classrooms fetched
+
+  /api/v1/classrooms/{classroomId}:
+    get:
+      tags: [Classrooms]
+      summary: Get classroom by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Classroom fetched
+    patch:
+      tags: [Classrooms]
+      summary: Update classroom
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClassroomBody'
+      responses:
+        '200':
+          description: Classroom updated
+    delete:
+      tags: [Classrooms]
+      summary: Delete classroom
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Classroom deleted
+
+  /api/v1/subjects:
+    post:
+      tags: [Subjects]
+      summary: Create subject
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubjectBody'
+      responses:
+        '201':
+          description: Subject created
+    get:
+      tags: [Subjects]
+      summary: List subjects
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [name, code, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Subjects fetched
+
+  /api/v1/subjects/{subjectId}:
+    get:
+      tags: [Subjects]
+      summary: Get subject by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Subject fetched
+    patch:
+      tags: [Subjects]
+      summary: Update subject
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubjectBody'
+      responses:
+        '200':
+          description: Subject updated
+    delete:
+      tags: [Subjects]
+      summary: Delete subject
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Subject deleted
+
+  /api/v1/attendance:
+    post:
+      tags: [Attendance]
+      summary: Mark attendance for a student
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAttendanceBody'
+      responses:
+        '201':
+          description: Attendance created
+    get:
+      tags: [Attendance]
+      summary: List attendance records
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: studentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: classRoomId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: subjectId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/AttendanceStatus'
+        - in: query
+          name: dateFrom
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: dateTo
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [date, status, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Attendance records fetched
+
+  /api/v1/attendance/bulk:
+    post:
+      tags: [Attendance]
+      summary: Bulk mark attendance
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkAttendanceBody'
+      responses:
+        '201':
+          description: Attendance records created
+
+  /api/v1/attendance/{attendanceId}:
+    get:
+      tags: [Attendance]
+      summary: Get attendance by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attendanceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance fetched
+    patch:
+      tags: [Attendance]
+      summary: Update attendance
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attendanceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAttendanceBody'
+      responses:
+        '200':
+          description: Attendance updated
+
+  /api/v1/attendance/stats/{studentId}:
+    get:
+      tags: [Attendance]
+      summary: Get attendance stats for a student
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance stats fetched
+
+  /api/v1/marks:
+    post:
+      tags: [Marks]
+      summary: Create mark entry
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMarkBody'
+      responses:
+        '201':
+          description: Mark created
+    get:
+      tags: [Marks]
+      summary: List marks
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: studentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: subjectId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: examId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: classRoomId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [marks, studentId, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Marks fetched
+
+  /api/v1/marks/bulk:
+    post:
+      tags: [Marks]
+      summary: Bulk create marks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkMarksBody'
+      responses:
+        '201':
+          description: Marks created
+
+  /api/v1/marks/{markId}:
+    get:
+      tags: [Marks]
+      summary: Get mark by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: markId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mark fetched
+    patch:
+      tags: [Marks]
+      summary: Update mark
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: markId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMarkBody'
+      responses:
+        '200':
+          description: Mark updated
+
+  /api/v1/marks/student/{studentId}:
+    get:
+      tags: [Marks]
+      summary: Get marks for a student
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student marks fetched
+
+  /api/v1/exams:
+    post:
+      tags: [Exams]
+      summary: Create exam
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExamBody'
+      responses:
+        '201':
+          description: Exam created
+    get:
+      tags: [Exams]
+      summary: List exams
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: term
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: dateFrom
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: dateTo
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [examDate, name, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Exams fetched
+
+  /api/v1/exams/{examId}:
+    get:
+      tags: [Exams]
+      summary: Get exam by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exam fetched
+    patch:
+      tags: [Exams]
+      summary: Update exam
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateExamBody'
+      responses:
+        '200':
+          description: Exam updated
+    delete:
+      tags: [Exams]
+      summary: Delete exam
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exam deleted
+
+  /api/v1/results:
+    get:
+      tags: [Results]
+      summary: List results
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: studentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: examId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: classRoomId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: gradeFilter
+          schema:
+            type: string
+            maxLength: 2
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [percentage, totalMarks, grade, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Results fetched
+
+  /api/v1/results/generate:
+    post:
+      tags: [Results]
+      summary: Generate result for student and exam
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateResultBody'
+      responses:
+        '201':
+          description: Result generated
+
+  /api/v1/results/{resultId}:
+    get:
+      tags: [Results]
+      summary: Get result by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: resultId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Result fetched
+
+  /api/v1/results/student/{studentId}:
+    get:
+      tags: [Results]
+      summary: Get results of a student
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student results fetched
+
+  /api/v1/fees:
+    post:
+      tags: [Fees]
+      summary: Create fee record
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeeBody'
+      responses:
+        '201':
+          description: Fee record created
+    get:
+      tags: [Fees]
+      summary: List fee records
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: userId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [PENDING, PAID, PARTIAL, OVERDUE]
+        - in: query
+          name: dateFrom
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: dateTo
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [dueDate, amount, status, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Fees fetched
+
+  /api/v1/fees/{feeId}:
+    get:
+      tags: [Fees]
+      summary: Get fee by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee fetched
+    patch:
+      tags: [Fees]
+      summary: Update fee
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeeBody'
+      responses:
+        '200':
+          description: Fee updated
+
+  /api/v1/fees/{feeId}/mark-paid:
+    post:
+      tags: [Fees]
+      summary: Mark fee as paid or partial
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkFeePaidBody'
+      responses:
+        '200':
+          description: Fee status updated
+
+  /api/v1/fees/stats/{userId}:
+    get:
+      tags: [Fees]
+      summary: Get fee stats by user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee stats fetched
+
+  /api/v1/books:
+    post:
+      tags: [Books]
+      summary: Create book
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookBody'
+      responses:
+        '201':
+          description: Book created
+    get:
+      tags: [Books]
+      summary: List books
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: author
+          schema:
+            type: string
+        - in: query
+          name: availableOnly
+          schema:
+            type: boolean
+            default: false
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [title, author, available, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Books fetched
+
+  /api/v1/books/{bookId}:
+    get:
+      tags: [Books]
+      summary: Get book by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book fetched
+    patch:
+      tags: [Books]
+      summary: Update book
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookBody'
+      responses:
+        '200':
+          description: Book updated
+
+  /api/v1/books/issue:
+    post:
+      tags: [Books]
+      summary: Issue book to user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueBookBody'
+      responses:
+        '201':
+          description: Book issued
+
+  /api/v1/books/{bookIssueId}/return:
+    post:
+      tags: [Books]
+      summary: Return issued book
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookIssueId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnBookBody'
+      responses:
+        '200':
+          description: Book returned
+
+  /api/v1/books/issues/list:
+    get:
+      tags: [Books]
+      summary: List issued books
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: userId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: bookId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [ACTIVE, RETURNED]
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [issueDate, dueDate, createdAt]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Book issue list fetched
+
+  /api/v1/books/issues/{bookIssueId}:
+    get:
+      tags: [Books]
+      summary: Get book issue by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookIssueId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book issue fetched
+
+  /api/v1/audit:
+    get:
+      tags: [Audit]
+      summary: List audit logs
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: action
+          schema:
+            type: string
+        - in: query
+          name: actorId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: targetId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: dateFrom
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: dateTo
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [createdAt, action]
+        - $ref: '#/components/parameters/SortOrderParam'
+      responses:
+        '200':
+          description: Audit logs fetched
+
+  /api/v1/audit/{auditId}:
+    get:
+      tags: [Audit]
+      summary: Get audit log by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: auditId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit log fetched
+
   /api/v1/files/import:
     post:
+      tags: [Files]
       summary: Import Excel file
       security:
         - bearerAuth: []
@@ -317,13 +1904,15 @@ paths:
                   type: string
                   format: binary
       responses:
-        "200":
+        '200':
           description: Import completed
+
   /api/v1/files/export:
     get:
+      tags: [Files]
       summary: Export data to Excel
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Excel file stream
