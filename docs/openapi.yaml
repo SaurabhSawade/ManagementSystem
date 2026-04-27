@@ -5,11 +5,30 @@ info:
   description: |
     Full API documentation for authentication, user administration, academic operations,
     finance, library workflows, audit logs, and file import/export.
+
+    ## Router Headings
+    - Admin Routes: `/api/v1/admin/...`
+    - Student Routes: `/api/v1/student/...`
+    - Teacher Routes: `/api/v1/teacher/...`
+    - Accountant Routes: `/api/v1/accountant/...`
+    - Library Routes: `/api/v1/library/...`
+
+    Note: Role-based router paths are aliases over the same module endpoints and keep the same RBAC checks.
 servers:
   - url: http://localhost:4000
     description: Local development
 
 tags:
+  - name: Admin Routes
+    description: Alias route group for admin-facing modules under `/api/v1/admin/...`.
+  - name: Student Routes
+    description: Alias route group for student-facing modules under `/api/v1/student/...`.
+  - name: Teacher Routes
+    description: Alias route group for teacher-facing modules under `/api/v1/teacher/...`.
+  - name: Accountant Routes
+    description: Alias route group for accountant-facing modules under `/api/v1/accountant/...`.
+  - name: Library Routes
+    description: Alias route group for library-facing modules under `/api/v1/library/...`.
   - name: Health
   - name: Auth
   - name: Users
@@ -154,6 +173,16 @@ components:
       properties:
         reason:
           type: string
+
+    ToggleUserBlockBody:
+      type: object
+      properties:
+        isBlocked:
+          type: boolean
+          description: Optional explicit state. If omitted, endpoint toggles current block state.
+        reason:
+          type: string
+          description: Optional reason when blocking.
 
     ResetUserPasswordBody:
       type: object
@@ -618,6 +647,34 @@ paths:
       responses:
         '200':
           description: User blocked
+
+  /api/v1/users/{userId}/block-status:
+    patch:
+      tags: [Users]
+      summary: Set or toggle user block status
+      description: |
+        Unified endpoint for block and unblock operations.
+        - Send `isBlocked: true` to block
+        - Send `isBlocked: false` to unblock
+        - Omit `isBlocked` to toggle current state
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToggleUserBlockBody'
+      responses:
+        '200':
+          description: User block status updated
 
   /api/v1/users/{userId}/unblock:
     patch:
