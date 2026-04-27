@@ -8,7 +8,7 @@ import authService from "../service/auth.service";
 const authController = {
   login: asyncHandler(async (req: Request, res: Response) => {
     const result = await authService.login(req.body.username, req.body.password);
-
+    // console.log("Login result:", result); // Debug log
     return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,

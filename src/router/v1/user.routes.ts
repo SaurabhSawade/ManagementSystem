@@ -20,7 +20,7 @@ userRouter.post(
 );
 
 userRouter.patch(
-  "/:userId/block-status",
+  "/block-status/:userId",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
   rbacMiddleware.requireAnyPermission([PERMISSIONS.USER_BLOCK, PERMISSIONS.USER_UNBLOCK]),
   validateMiddleware.validate(userValidation.toggleUserBlockSchema),
@@ -28,7 +28,7 @@ userRouter.patch(
 );
 
 userRouter.patch(
-  "/:userId/block",
+  "/block/:userId",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
   rbacMiddleware.requirePermission(PERMISSIONS.USER_BLOCK),
   validateMiddleware.validate(userValidation.blockUserSchema),
@@ -36,7 +36,7 @@ userRouter.patch(
 );
 
 userRouter.patch(
-  "/:userId/unblock",
+  "/unblock/:userId",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
   rbacMiddleware.requirePermission(PERMISSIONS.USER_UNBLOCK),
   validateMiddleware.validate(userValidation.toggleUserBlockSchema),
@@ -44,7 +44,7 @@ userRouter.patch(
 );
 
 userRouter.patch(
-  "/:userId/reset-password",
+  "/reset-password/:userId",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
   rbacMiddleware.requirePermission(PERMISSIONS.USER_RESET_PASSWORD),
   validateMiddleware.validate(userValidation.resetUserPasswordSchema),
@@ -52,14 +52,14 @@ userRouter.patch(
 );
 
 userRouter.patch(
-  "/:userId/grant-admin",
+  "/grant-admin/:userId",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
   rbacMiddleware.requirePermission(PERMISSIONS.ADMIN_GRANT),
   userController.grantAdmin,
 );
 
 userRouter.patch(
-  "/:userId/revoke-admin",
+  "/revoke-admin/:userId",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
   rbacMiddleware.requirePermission(PERMISSIONS.ADMIN_REVOKE),
   userController.revokeAdmin,

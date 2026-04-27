@@ -42,7 +42,7 @@ feeRouter.patch(
 );
 
 feeRouter.post(
-  "/:feeId/mark-paid",
+  "/mark-paid/:feeId",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ACCOUNTANT]),
   rbacMiddleware.requirePermission(PERMISSIONS.FEE_UPDATE),
   validateMiddleware.validate(feeValidation.markFeeAsPaidSchema),

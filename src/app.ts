@@ -22,6 +22,7 @@ app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.get("/health", (_req, res) => {
+	console.log("Health check endpoint called"); // Debug log
 	res.status(HTTP_STATUS.OK).json(
 		apiResponse.buildResponse({
 			status: HTTP_STATUS.OK,

@@ -36,13 +36,13 @@ const login = async (username: string, password: string) => {
   return {
     accessToken: jwtUtils.signAccessToken(payload),
     refreshToken: jwtUtils.signRefreshToken(payload),
-    user: {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      phone: user.phone,
-      roles,
-    },
+    // user: {
+    //   id: user.id,
+    //   username: user.username,
+    //   email: user.email,
+    //   phone: user.phone,
+    //   roles,
+    // },
   };
 };
 
