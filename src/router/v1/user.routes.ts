@@ -27,21 +27,21 @@ userRouter.patch(
   userController.setUserBlockStatus,
 );
 
-userRouter.patch(
-  "/block/:userId",
-  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
-  rbacMiddleware.requirePermission(PERMISSIONS.USER_BLOCK),
-  validateMiddleware.validate(userValidation.blockUserSchema),
-  userController.blockUser,
-);
+// userRouter.patch(
+//   "/block/:userId",
+//   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
+//   rbacMiddleware.requirePermission(PERMISSIONS.USER_BLOCK),
+//   validateMiddleware.validate(userValidation.blockUserSchema),
+//   userController.blockUser,
+// );
 
-userRouter.patch(
-  "/unblock/:userId",
-  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
-  rbacMiddleware.requirePermission(PERMISSIONS.USER_UNBLOCK),
-  validateMiddleware.validate(userValidation.toggleUserBlockSchema),
-  userController.unblockUser,
-);
+// userRouter.patch(
+//   "/unblock/:userId",
+//   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
+//   rbacMiddleware.requirePermission(PERMISSIONS.USER_UNBLOCK),
+//   validateMiddleware.validate(userValidation.toggleUserBlockSchema),
+//   userController.unblockUser,
+// );
 
 userRouter.patch(
   "/reset-password/:userId",

@@ -544,7 +544,7 @@ paths:
         '201':
           description: User created
 
-  /api/v1/admin/users/{userId}/block-status:
+  /api/v1/admin/users/block-status/{userId}:
     patch:
       tags: [Admin Routes]
       summary: Admin alias - set or toggle user block status
@@ -568,8 +568,8 @@ paths:
         '200':
           description: User block status updated
 
-  /api/v1/admin/users/{userId}/block:
-    patch:
+    /api/v1/admin/users/{userId}/block:
+      patch:
       tags: [Admin Routes]
       summary: Admin alias - block user
       description: Alias of `/api/v1/users/{userId}/block`.
@@ -592,7 +592,7 @@ paths:
         '200':
           description: User blocked
 
-  /api/v1/admin/users/{userId}/unblock:
+  /api/v1/admin/users/unblock/{userId}:
     patch:
       tags: [Admin Routes]
       summary: Admin alias - unblock user
@@ -610,7 +610,7 @@ paths:
         '200':
           description: User unblocked
 
-  /api/v1/admin/users/{userId}/reset-password:
+  /api/v1/admin/users/reset-password/{userId}:
     patch:
       tags: [Admin Routes]
       summary: Admin alias - reset user password
@@ -634,7 +634,7 @@ paths:
         '200':
           description: Password reset
 
-  /api/v1/admin/users/{userId}/grant-admin:
+  /api/v1/admin/users/grant-admin/{userId}:
     patch:
       tags: [Admin Routes]
       summary: Admin alias - grant admin
@@ -652,7 +652,7 @@ paths:
         '200':
           description: Admin granted
 
-  /api/v1/admin/users/{userId}/revoke-admin:
+  /api/v1/admin/users/revoke-admin/{userId}:
     patch:
       tags: [Admin Routes]
       summary: Admin alias - revoke admin
