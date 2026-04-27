@@ -527,189 +527,2403 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
 
-    /api/v1/admin/users:
-      post:
-        tags: [Admin Routes]
-        summary: Admin alias - create user
-        description: Alias of `/api/v1/users`.
-        security:
-          - bearerAuth: []
-        requestBody:
+  /api/v1/admin/users:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create user
+      description: Alias of `/api/v1/users`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserBody'
+      responses:
+        '201':
+          description: User created
+
+  /api/v1/admin/users/{userId}/block-status:
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - set or toggle user block status
+      description: Alias of `/api/v1/users/{userId}/block-status`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
           required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateUserBody'
-        responses:
-          '201':
-            description: User created
-
-    /api/v1/admin/users/{userId}/block-status:
-      patch:
-        tags: [Admin Routes]
-        summary: Admin alias - set or toggle user block status
-        description: Alias of `/api/v1/users/{userId}/block-status`.
-        security:
-          - bearerAuth: []
-        parameters:
-          - in: path
-            name: userId
-            required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
             schema:
-              type: string
-              format: uuid
-        requestBody:
-          required: false
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ToggleUserBlockBody'
-        responses:
-          '200':
-            description: User block status updated
+              $ref: '#/components/schemas/ToggleUserBlockBody'
+      responses:
+        '200':
+          description: User block status updated
 
-    /api/v1/student/profile/me:
-      get:
-        tags: [Student Routes]
-        summary: Student alias - get own profile
-        description: Alias of `/api/v1/profile/me`.
-        security:
-          - bearerAuth: []
-        responses:
-          '200':
-            description: Profile fetched
-
-    /api/v1/teacher/students:
-      get:
-        tags: [Teacher Routes]
-        summary: Teacher alias - list students
-        description: Alias of `/api/v1/students`.
-        security:
-          - bearerAuth: []
-        parameters:
-          - $ref: '#/components/parameters/PageParam'
-          - $ref: '#/components/parameters/LimitParam'
-          - in: query
-            name: classRoomId
-            schema:
-              type: string
-              format: uuid
-          - in: query
-            name: search
-            schema:
-              type: string
-          - in: query
-            name: sortBy
-            schema:
-              type: string
-              enum: [rollNumber, createdAt]
-          - $ref: '#/components/parameters/SortOrderParam'
-        responses:
-          '200':
-            description: Students fetched
-
-    /api/v1/accountant/fees:
-      post:
-        tags: [Accountant Routes]
-        summary: Accountant alias - create fee record
-        description: Alias of `/api/v1/fees`.
-        security:
-          - bearerAuth: []
-        requestBody:
+  /api/v1/admin/users/{userId}/block:
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - block user
+      description: Alias of `/api/v1/users/{userId}/block`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
           required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateFeeBody'
-        responses:
-          '201':
-            description: Fee record created
-      get:
-        tags: [Accountant Routes]
-        summary: Accountant alias - list fee records
-        description: Alias of `/api/v1/fees`.
-        security:
-          - bearerAuth: []
-        parameters:
-          - $ref: '#/components/parameters/PageParam'
-          - $ref: '#/components/parameters/LimitParam'
-          - in: query
-            name: userId
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
             schema:
-              type: string
-              format: uuid
-          - in: query
-            name: status
-            schema:
-              type: string
-              enum: [PENDING, PAID, PARTIAL, OVERDUE]
-          - in: query
-            name: dateFrom
-            schema:
-              type: string
-              format: date-time
-          - in: query
-            name: dateTo
-            schema:
-              type: string
-              format: date-time
-          - in: query
-            name: sortBy
-            schema:
-              type: string
-              enum: [dueDate, amount, status, createdAt]
-          - $ref: '#/components/parameters/SortOrderParam'
-        responses:
-          '200':
-            description: Fees fetched
+              $ref: '#/components/schemas/BlockUserBody'
+      responses:
+        '200':
+          description: User blocked
 
-    /api/v1/library/books:
-      post:
-        tags: [Library Routes]
-        summary: Library alias - create book
-        description: Alias of `/api/v1/books`.
-        security:
-          - bearerAuth: []
-        requestBody:
+  /api/v1/admin/users/{userId}/unblock:
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - unblock user
+      description: Alias of `/api/v1/users/{userId}/unblock`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
           required: true
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateBookBody'
-        responses:
-          '201':
-            description: Book created
-      get:
-        tags: [Library Routes]
-        summary: Library alias - list books
-        description: Alias of `/api/v1/books`.
-        security:
-          - bearerAuth: []
-        parameters:
-          - $ref: '#/components/parameters/PageParam'
-          - $ref: '#/components/parameters/LimitParam'
-          - in: query
-            name: search
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User unblocked
+
+  /api/v1/admin/users/{userId}/reset-password:
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - reset user password
+      description: Alias of `/api/v1/users/{userId}/reset-password`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
             schema:
-              type: string
-          - in: query
-            name: author
+              $ref: '#/components/schemas/ResetUserPasswordBody'
+      responses:
+        '200':
+          description: Password reset
+
+  /api/v1/admin/users/{userId}/grant-admin:
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - grant admin
+      description: Alias of `/api/v1/users/{userId}/grant-admin`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Admin granted
+
+  /api/v1/admin/users/{userId}/revoke-admin:
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - revoke admin
+      description: Alias of `/api/v1/users/{userId}/revoke-admin`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Admin revoked
+
+  /api/v1/admin/students:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create student
+      description: Alias of `/api/v1/students`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Student created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list students
+      description: Alias of `/api/v1/students`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Students fetched
+
+  /api/v1/admin/students/{studentId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get student by id
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update student
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student updated
+    delete:
+      tags: [Admin Routes]
+      summary: Admin alias - delete student
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student deleted
+
+  /api/v1/admin/teachers:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create teacher
+      description: Alias of `/api/v1/teachers`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Teacher created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list teachers
+      description: Alias of `/api/v1/teachers`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Teachers fetched
+
+  /api/v1/admin/teachers/{teacherId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get teacher by id
+      description: Alias of `/api/v1/teachers/{teacherId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: teacherId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Teacher fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update teacher
+      description: Alias of `/api/v1/teachers/{teacherId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: teacherId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Teacher updated
+    delete:
+      tags: [Admin Routes]
+      summary: Admin alias - delete teacher
+      description: Alias of `/api/v1/teachers/{teacherId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: teacherId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Teacher deleted
+
+  /api/v1/admin/classrooms:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create classroom
+      description: Alias of `/api/v1/classrooms`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Classroom created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list classrooms
+      description: Alias of `/api/v1/classrooms`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Classrooms fetched
+
+  /api/v1/admin/classrooms/{classroomId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get classroom by id
+      description: Alias of `/api/v1/classrooms/{classroomId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Classroom fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update classroom
+      description: Alias of `/api/v1/classrooms/{classroomId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Classroom updated
+    delete:
+      tags: [Admin Routes]
+      summary: Admin alias - delete classroom
+      description: Alias of `/api/v1/classrooms/{classroomId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Classroom deleted
+
+  /api/v1/admin/subjects:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create subject
+      description: Alias of `/api/v1/subjects`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Subject created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list subjects
+      description: Alias of `/api/v1/subjects`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subjects fetched
+
+  /api/v1/admin/subjects/{subjectId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get subject by id
+      description: Alias of `/api/v1/subjects/{subjectId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Subject fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update subject
+      description: Alias of `/api/v1/subjects/{subjectId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Subject updated
+    delete:
+      tags: [Admin Routes]
+      summary: Admin alias - delete subject
+      description: Alias of `/api/v1/subjects/{subjectId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Subject deleted
+
+  /api/v1/admin/attendance:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - mark attendance
+      description: Alias of `/api/v1/attendance`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Attendance created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list attendance
+      description: Alias of `/api/v1/attendance`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Attendance records fetched
+
+  /api/v1/admin/attendance/bulk:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - bulk attendance
+      description: Alias of `/api/v1/attendance/bulk`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Attendance records created
+
+  /api/v1/admin/attendance/{attendanceId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get attendance by id
+      description: Alias of `/api/v1/attendance/{attendanceId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attendanceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update attendance
+      description: Alias of `/api/v1/attendance/{attendanceId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attendanceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance updated
+
+  /api/v1/admin/attendance/stats/{studentId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - attendance stats
+      description: Alias of `/api/v1/attendance/stats/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance stats fetched
+
+  /api/v1/admin/marks:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create mark
+      description: Alias of `/api/v1/marks`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Mark created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list marks
+      description: Alias of `/api/v1/marks`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Marks fetched
+
+  /api/v1/admin/marks/bulk:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - bulk marks
+      description: Alias of `/api/v1/marks/bulk`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Marks created
+
+  /api/v1/admin/marks/{markId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get mark by id
+      description: Alias of `/api/v1/marks/{markId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: markId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mark fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update mark
+      description: Alias of `/api/v1/marks/{markId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: markId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mark updated
+
+  /api/v1/admin/marks/student/{studentId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get student marks
+      description: Alias of `/api/v1/marks/student/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student marks fetched
+
+  /api/v1/admin/exams:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create exam
+      description: Alias of `/api/v1/exams`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Exam created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list exams
+      description: Alias of `/api/v1/exams`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Exams fetched
+
+  /api/v1/admin/exams/{examId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get exam by id
+      description: Alias of `/api/v1/exams/{examId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exam fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update exam
+      description: Alias of `/api/v1/exams/{examId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exam updated
+    delete:
+      tags: [Admin Routes]
+      summary: Admin alias - delete exam
+      description: Alias of `/api/v1/exams/{examId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exam deleted
+
+  /api/v1/admin/results:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list results
+      description: Alias of `/api/v1/results`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Results fetched
+
+  /api/v1/admin/results/generate:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - generate result
+      description: Alias of `/api/v1/results/generate`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Result generated
+
+  /api/v1/admin/results/{resultId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get result by id
+      description: Alias of `/api/v1/results/{resultId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: resultId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Result fetched
+
+  /api/v1/admin/results/student/{studentId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get student results
+      description: Alias of `/api/v1/results/student/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student results fetched
+
+  /api/v1/admin/fees:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create fee
+      description: Alias of `/api/v1/fees`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Fee record created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list fees
+      description: Alias of `/api/v1/fees`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Fees fetched
+
+  /api/v1/admin/fees/{feeId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get fee by id
+      description: Alias of `/api/v1/fees/{feeId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update fee
+      description: Alias of `/api/v1/fees/{feeId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee updated
+
+  /api/v1/admin/fees/{feeId}/mark-paid:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - mark fee paid
+      description: Alias of `/api/v1/fees/{feeId}/mark-paid`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee status updated
+
+  /api/v1/admin/fees/stats/{userId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - fee stats by user
+      description: Alias of `/api/v1/fees/stats/{userId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee stats fetched
+
+  /api/v1/admin/books:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - create book
+      description: Alias of `/api/v1/books`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Book created
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list books
+      description: Alias of `/api/v1/books`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Books fetched
+
+  /api/v1/admin/books/{bookId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get book by id
+      description: Alias of `/api/v1/books/{bookId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book fetched
+    patch:
+      tags: [Admin Routes]
+      summary: Admin alias - update book
+      description: Alias of `/api/v1/books/{bookId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book updated
+
+  /api/v1/admin/books/issue:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - issue book
+      description: Alias of `/api/v1/books/issue`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Book issued
+
+  /api/v1/admin/books/{bookIssueId}/return:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - return book
+      description: Alias of `/api/v1/books/{bookIssueId}/return`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookIssueId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book returned
+
+  /api/v1/admin/books/issues/list:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list book issues
+      description: Alias of `/api/v1/books/issues/list`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Book issue list fetched
+
+  /api/v1/admin/books/issues/{bookIssueId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get book issue by id
+      description: Alias of `/api/v1/books/issues/{bookIssueId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookIssueId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book issue fetched
+
+  /api/v1/admin/audit:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - list audit logs
+      description: Alias of `/api/v1/audit`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Audit logs fetched
+
+  /api/v1/admin/audit/{auditId}:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - get audit by id
+      description: Alias of `/api/v1/audit/{auditId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: auditId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit log fetched
+
+  /api/v1/admin/files/import:
+    post:
+      tags: [Admin Routes]
+      summary: Admin alias - import file
+      description: Alias of `/api/v1/files/import`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Import completed
+
+  /api/v1/admin/files/export:
+    get:
+      tags: [Admin Routes]
+      summary: Admin alias - export file
+      description: Alias of `/api/v1/files/export`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Excel file stream
+
+  /api/v1/student/profile/me:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get own profile
+      description: Alias of `/api/v1/profile/me`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile fetched
+
+  /api/v1/student/attendance:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - mark attendance
+      description: Alias of `/api/v1/attendance`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
             schema:
-              type: string
-          - in: query
-            name: availableOnly
+              $ref: '#/components/schemas/CreateAttendanceBody'
+      responses:
+        '201':
+          description: Attendance created
+    get:
+      tags: [Student Routes]
+      summary: Student alias - list attendance
+      description: Alias of `/api/v1/attendance`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Attendance records fetched
+
+  /api/v1/student/attendance/bulk:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - bulk attendance
+      description: Alias of `/api/v1/attendance/bulk`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
             schema:
-              type: boolean
-              default: false
-          - in: query
-            name: sortBy
+              $ref: '#/components/schemas/BulkAttendanceBody'
+      responses:
+        '201':
+          description: Attendance records created
+
+  /api/v1/student/attendance/{attendanceId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get attendance by id
+      description: Alias of `/api/v1/attendance/{attendanceId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attendanceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance fetched
+    patch:
+      tags: [Student Routes]
+      summary: Student alias - update attendance
+      description: Alias of `/api/v1/attendance/{attendanceId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attendanceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
             schema:
-              type: string
-              enum: [title, author, available, createdAt]
-          - $ref: '#/components/parameters/SortOrderParam'
-        responses:
-          '200':
-            description: Books fetched
+              $ref: '#/components/schemas/UpdateAttendanceBody'
+      responses:
+        '200':
+          description: Attendance updated
+
+  /api/v1/student/attendance/stats/{studentId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - attendance stats
+      description: Alias of `/api/v1/attendance/stats/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance stats fetched
+
+  /api/v1/student/marks:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - create mark
+      description: Alias of `/api/v1/marks`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMarkBody'
+      responses:
+        '201':
+          description: Mark created
+    get:
+      tags: [Student Routes]
+      summary: Student alias - list marks
+      description: Alias of `/api/v1/marks`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Marks fetched
+
+  /api/v1/student/marks/bulk:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - bulk marks
+      description: Alias of `/api/v1/marks/bulk`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkMarksBody'
+      responses:
+        '201':
+          description: Marks created
+
+  /api/v1/student/marks/{markId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get mark by id
+      description: Alias of `/api/v1/marks/{markId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: markId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mark fetched
+    patch:
+      tags: [Student Routes]
+      summary: Student alias - update mark
+      description: Alias of `/api/v1/marks/{markId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: markId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMarkBody'
+      responses:
+        '200':
+          description: Mark updated
+
+  /api/v1/student/marks/student/{studentId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get student marks
+      description: Alias of `/api/v1/marks/student/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student marks fetched
+
+  /api/v1/student/results:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - list results
+      description: Alias of `/api/v1/results`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Results fetched
+
+  /api/v1/student/results/generate:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - generate result
+      description: Alias of `/api/v1/results/generate`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateResultBody'
+      responses:
+        '201':
+          description: Result generated
+
+  /api/v1/student/results/{resultId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get result by id
+      description: Alias of `/api/v1/results/{resultId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: resultId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Result fetched
+
+  /api/v1/student/results/student/{studentId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get student results
+      description: Alias of `/api/v1/results/student/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student results fetched
+
+  /api/v1/student/fees:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - create fee record
+      description: Alias of `/api/v1/fees`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeeBody'
+      responses:
+        '201':
+          description: Fee record created
+    get:
+      tags: [Student Routes]
+      summary: Student alias - list fee records
+      description: Alias of `/api/v1/fees`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Fees fetched
+
+  /api/v1/student/fees/{feeId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get fee by id
+      description: Alias of `/api/v1/fees/{feeId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee fetched
+    patch:
+      tags: [Student Routes]
+      summary: Student alias - update fee
+      description: Alias of `/api/v1/fees/{feeId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeeBody'
+      responses:
+        '200':
+          description: Fee updated
+
+  /api/v1/student/fees/{feeId}/mark-paid:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - mark fee paid
+      description: Alias of `/api/v1/fees/{feeId}/mark-paid`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkFeePaidBody'
+      responses:
+        '200':
+          description: Fee status updated
+
+  /api/v1/student/fees/stats/{userId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - fee stats by user
+      description: Alias of `/api/v1/fees/stats/{userId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee stats fetched
+
+  /api/v1/student/books:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - create book
+      description: Alias of `/api/v1/books`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookBody'
+      responses:
+        '201':
+          description: Book created
+    get:
+      tags: [Student Routes]
+      summary: Student alias - list books
+      description: Alias of `/api/v1/books`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Books fetched
+
+  /api/v1/student/books/{bookId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get book by id
+      description: Alias of `/api/v1/books/{bookId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book fetched
+    patch:
+      tags: [Student Routes]
+      summary: Student alias - update book
+      description: Alias of `/api/v1/books/{bookId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookBody'
+      responses:
+        '200':
+          description: Book updated
+
+  /api/v1/student/books/issue:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - issue book
+      description: Alias of `/api/v1/books/issue`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueBookBody'
+      responses:
+        '201':
+          description: Book issued
+
+  /api/v1/student/books/{bookIssueId}/return:
+    post:
+      tags: [Student Routes]
+      summary: Student alias - return book
+      description: Alias of `/api/v1/books/{bookIssueId}/return`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookIssueId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnBookBody'
+      responses:
+        '200':
+          description: Book returned
+
+  /api/v1/student/books/issues/list:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - list book issues
+      description: Alias of `/api/v1/books/issues/list`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Book issue list fetched
+
+  /api/v1/student/books/issues/{bookIssueId}:
+    get:
+      tags: [Student Routes]
+      summary: Student alias - get book issue
+      description: Alias of `/api/v1/books/issues/{bookIssueId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookIssueId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book issue fetched
+
+  /api/v1/teacher/profile/me:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get own profile
+      description: Alias of `/api/v1/profile/me`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile fetched
+
+  /api/v1/teacher/students:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - create student
+      description: Alias of `/api/v1/students`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudentBody'
+      responses:
+        '201':
+          description: Student created
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - list students
+      description: Alias of `/api/v1/students`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Students fetched
+
+  /api/v1/teacher/students/{studentId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get student by id
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student fetched
+    patch:
+      tags: [Teacher Routes]
+      summary: Teacher alias - update student
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStudentBody'
+      responses:
+        '200':
+          description: Student updated
+    delete:
+      tags: [Teacher Routes]
+      summary: Teacher alias - delete student
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student deleted
+
+  /api/v1/teacher/classrooms:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - create classroom
+      description: Alias of `/api/v1/classrooms`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Classroom created
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - list classrooms
+      description: Alias of `/api/v1/classrooms`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Classrooms fetched
+
+  /api/v1/teacher/classrooms/{classroomId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get classroom by id
+      description: Alias of `/api/v1/classrooms/{classroomId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Classroom fetched
+    patch:
+      tags: [Teacher Routes]
+      summary: Teacher alias - update classroom
+      description: Alias of `/api/v1/classrooms/{classroomId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Classroom updated
+    delete:
+      tags: [Teacher Routes]
+      summary: Teacher alias - delete classroom
+      description: Alias of `/api/v1/classrooms/{classroomId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: classroomId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Classroom deleted
+
+  /api/v1/teacher/subjects:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - create subject
+      description: Alias of `/api/v1/subjects`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Subject created
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - list subjects
+      description: Alias of `/api/v1/subjects`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subjects fetched
+
+  /api/v1/teacher/subjects/{subjectId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get subject by id
+      description: Alias of `/api/v1/subjects/{subjectId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Subject fetched
+    patch:
+      tags: [Teacher Routes]
+      summary: Teacher alias - update subject
+      description: Alias of `/api/v1/subjects/{subjectId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Subject updated
+    delete:
+      tags: [Teacher Routes]
+      summary: Teacher alias - delete subject
+      description: Alias of `/api/v1/subjects/{subjectId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subjectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Subject deleted
+
+  /api/v1/teacher/attendance:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - mark attendance
+      description: Alias of `/api/v1/attendance`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Attendance created
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - list attendance
+      description: Alias of `/api/v1/attendance`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Attendance records fetched
+
+  /api/v1/teacher/attendance/bulk:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - bulk attendance
+      description: Alias of `/api/v1/attendance/bulk`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Attendance records created
+
+  /api/v1/teacher/attendance/{attendanceId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get attendance by id
+      description: Alias of `/api/v1/attendance/{attendanceId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attendanceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance fetched
+    patch:
+      tags: [Teacher Routes]
+      summary: Teacher alias - update attendance
+      description: Alias of `/api/v1/attendance/{attendanceId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: attendanceId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance updated
+
+  /api/v1/teacher/attendance/stats/{studentId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - attendance stats
+      description: Alias of `/api/v1/attendance/stats/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attendance stats fetched
+
+  /api/v1/teacher/marks:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - create mark
+      description: Alias of `/api/v1/marks`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Mark created
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - list marks
+      description: Alias of `/api/v1/marks`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Marks fetched
+
+  /api/v1/teacher/marks/bulk:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - bulk marks
+      description: Alias of `/api/v1/marks/bulk`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Marks created
+
+  /api/v1/teacher/marks/{markId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get mark by id
+      description: Alias of `/api/v1/marks/{markId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: markId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mark fetched
+    patch:
+      tags: [Teacher Routes]
+      summary: Teacher alias - update mark
+      description: Alias of `/api/v1/marks/{markId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: markId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Mark updated
+
+  /api/v1/teacher/marks/student/{studentId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get student marks
+      description: Alias of `/api/v1/marks/student/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student marks fetched
+
+  /api/v1/teacher/exams:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - create exam
+      description: Alias of `/api/v1/exams`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Exam created
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - list exams
+      description: Alias of `/api/v1/exams`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Exams fetched
+
+  /api/v1/teacher/exams/{examId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get exam by id
+      description: Alias of `/api/v1/exams/{examId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exam fetched
+    patch:
+      tags: [Teacher Routes]
+      summary: Teacher alias - update exam
+      description: Alias of `/api/v1/exams/{examId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exam updated
+    delete:
+      tags: [Teacher Routes]
+      summary: Teacher alias - delete exam
+      description: Alias of `/api/v1/exams/{examId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Exam deleted
+
+  /api/v1/teacher/results:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - list results
+      description: Alias of `/api/v1/results`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Results fetched
+
+  /api/v1/teacher/results/generate:
+    post:
+      tags: [Teacher Routes]
+      summary: Teacher alias - generate result
+      description: Alias of `/api/v1/results/generate`.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Result generated
+
+  /api/v1/teacher/results/{resultId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get result by id
+      description: Alias of `/api/v1/results/{resultId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: resultId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Result fetched
+
+  /api/v1/teacher/results/student/{studentId}:
+    get:
+      tags: [Teacher Routes]
+      summary: Teacher alias - get student results
+      description: Alias of `/api/v1/results/student/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student results fetched
+
+  /api/v1/accountant/profile/me:
+    get:
+      tags: [Accountant Routes]
+      summary: Accountant alias - get own profile
+      description: Alias of `/api/v1/profile/me`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile fetched
+
+  /api/v1/accountant/students:
+    post:
+      tags: [Accountant Routes]
+      summary: Accountant alias - create student
+      description: Alias of `/api/v1/students`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudentBody'
+      responses:
+        '201':
+          description: Student created
+    get:
+      tags: [Accountant Routes]
+      summary: Accountant alias - list students
+      description: Alias of `/api/v1/students`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Students fetched
+
+  /api/v1/accountant/students/{studentId}:
+    get:
+      tags: [Accountant Routes]
+      summary: Accountant alias - get student by id
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student fetched
+    patch:
+      tags: [Accountant Routes]
+      summary: Accountant alias - update student
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStudentBody'
+      responses:
+        '200':
+          description: Student updated
+    delete:
+      tags: [Accountant Routes]
+      summary: Accountant alias - delete student
+      description: Alias of `/api/v1/students/{studentId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student deleted
+
+  /api/v1/accountant/fees:
+    post:
+      tags: [Accountant Routes]
+      summary: Accountant alias - create fee record
+      description: Alias of `/api/v1/fees`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeeBody'
+      responses:
+        '201':
+          description: Fee record created
+    get:
+      tags: [Accountant Routes]
+      summary: Accountant alias - list fee records
+      description: Alias of `/api/v1/fees`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Fees fetched
+
+  /api/v1/accountant/fees/{feeId}:
+    get:
+      tags: [Accountant Routes]
+      summary: Accountant alias - get fee by id
+      description: Alias of `/api/v1/fees/{feeId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee fetched
+    patch:
+      tags: [Accountant Routes]
+      summary: Accountant alias - update fee
+      description: Alias of `/api/v1/fees/{feeId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeeBody'
+      responses:
+        '200':
+          description: Fee updated
+
+  /api/v1/accountant/fees/{feeId}/mark-paid:
+    post:
+      tags: [Accountant Routes]
+      summary: Accountant alias - mark fee paid
+      description: Alias of `/api/v1/fees/{feeId}/mark-paid`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: feeId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkFeePaidBody'
+      responses:
+        '200':
+          description: Fee status updated
+
+  /api/v1/accountant/fees/stats/{userId}:
+    get:
+      tags: [Accountant Routes]
+      summary: Accountant alias - fee stats by user
+      description: Alias of `/api/v1/fees/stats/{userId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Fee stats fetched
+
+  /api/v1/accountant/files/import:
+    post:
+      tags: [Accountant Routes]
+      summary: Accountant alias - import file
+      description: Alias of `/api/v1/files/import`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Import completed
+
+  /api/v1/accountant/files/export:
+    get:
+      tags: [Accountant Routes]
+      summary: Accountant alias - export file
+      description: Alias of `/api/v1/files/export`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Excel file stream
+
+  /api/v1/library/profile/me:
+    get:
+      tags: [Library Routes]
+      summary: Library alias - get own profile
+      description: Alias of `/api/v1/profile/me`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile fetched
+
+  /api/v1/library/books:
+    post:
+      tags: [Library Routes]
+      summary: Library alias - create book
+      description: Alias of `/api/v1/books`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookBody'
+      responses:
+        '201':
+          description: Book created
+    get:
+      tags: [Library Routes]
+      summary: Library alias - list books
+      description: Alias of `/api/v1/books`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Books fetched
+
+  /api/v1/library/books/{bookId}:
+    get:
+      tags: [Library Routes]
+      summary: Library alias - get book by id
+      description: Alias of `/api/v1/books/{bookId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book fetched
+    patch:
+      tags: [Library Routes]
+      summary: Library alias - update book
+      description: Alias of `/api/v1/books/{bookId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookBody'
+      responses:
+        '200':
+          description: Book updated
+
+  /api/v1/library/books/issue:
+    post:
+      tags: [Library Routes]
+      summary: Library alias - issue book
+      description: Alias of `/api/v1/books/issue`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueBookBody'
+      responses:
+        '201':
+          description: Book issued
+
+  /api/v1/library/books/{bookIssueId}/return:
+    post:
+      tags: [Library Routes]
+      summary: Library alias - return book
+      description: Alias of `/api/v1/books/{bookIssueId}/return`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookIssueId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnBookBody'
+      responses:
+        '200':
+          description: Book returned
+
+  /api/v1/library/books/issues/list:
+    get:
+      tags: [Library Routes]
+      summary: Library alias - list issues
+      description: Alias of `/api/v1/books/issues/list`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Book issue list fetched
+
+  /api/v1/library/books/issues/{bookIssueId}:
+    get:
+      tags: [Library Routes]
+      summary: Library alias - get issue by id
+      description: Alias of `/api/v1/books/issues/{bookIssueId}`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookIssueId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Book issue fetched
 
   /api/v1/auth/login:
     post:
