@@ -1,17 +1,14 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import examModel from "../model/exam.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
 const createExam = async (name: string, term: string, examDate: Date) => {
-  return prisma.exam.create({
-    data: { name, term, examDate },
-  });
+  return examModel.create(name, term, examDate);
 };
 
 const getExamById = async (examId: string) => {
-  const exam = await prisma.exam.findUnique({
-    where: { id: examId },
-  });
+  const exam = await examModel.findById(examId);
 
   if (!exam) {
     throw new appError(
@@ -32,14 +29,7 @@ const updateExam = async (
     examDate?: Date;
   },
 ) => {
-  return prisma.exam.update({
-    where: { id: examId },
-    data: {
-      ...(data.name && { name: data.name }),
-      ...(data.term && { term: data.term }),
-      ...(data.examDate && { examDate: data.examDate }),
-    },
-  });
+  return examModel.updateById(examId, data);
 };
 
 const listExams = async (params: {
@@ -54,7 +44,7 @@ const listExams = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.ExamWhereInput = {};
   if (params.term) where.term = params.term;
   if (params.search) where.name = { contains: params.search, mode: "insensitive" };
   if (params.dateFrom || params.dateTo) {
@@ -64,13 +54,14 @@ const listExams = async (params: {
   }
 
   const [exams, total] = await Promise.all([
-    prisma.exam.findMany({
+    examModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: { [params.sortBy]: params.sortOrder },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.exam.count({ where }),
+    examModel.count(where),
   ]);
 
   return {
@@ -83,9 +74,7 @@ const listExams = async (params: {
 };
 
 const deleteExam = async (examId: string) => {
-  return prisma.exam.delete({
-    where: { id: examId },
-  });
+  return examModel.deleteById(examId);
 };
 
 const examService = {

@@ -19,6 +19,18 @@ const blockUserSchema = z.object({
   }),
 });
 
+const toggleUserBlockSchema = z.object({
+  params: z.object({
+    userId: z.string().uuid(),
+  }),
+  body: z
+    .object({
+      isBlocked: z.boolean().optional(),
+      reason: z.string().min(3).optional(),
+    })
+    .optional(),
+});
+
 const resetUserPasswordSchema = z.object({
   params: z.object({
     userId: z.string().uuid(),
@@ -31,6 +43,7 @@ const resetUserPasswordSchema = z.object({
 const userValidation = {
   createUserSchema,
   blockUserSchema,
+  toggleUserBlockSchema,
   resetUserPasswordSchema,
 };
 

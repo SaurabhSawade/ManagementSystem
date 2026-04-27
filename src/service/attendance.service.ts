@@ -1,4 +1,5 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import attendanceModel from "../model/attendance.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
@@ -9,12 +10,12 @@ const markAttendance = async (
   date: Date,
   status: string,
 ) => {
-  return prisma.attendanceRecord.upsert({
-    where: {
-      studentId_subjectId_date: { studentId, subjectId, date },
-    },
-    update: { status, classRoomId },
-    create: { studentId, classRoomId, subjectId, date, status },
+  return attendanceModel.upsertAttendance({
+    studentId,
+    classRoomId,
+    subjectId,
+    date,
+    status,
   });
 };
 
@@ -34,14 +35,7 @@ const bulkMarkAttendance = async (
 };
 
 const getAttendanceById = async (attendanceId: string) => {
-  const record = await prisma.attendanceRecord.findUnique({
-    where: { id: attendanceId },
-    include: {
-      student: true,
-      classRoom: true,
-      subject: true,
-    },
-  });
+  const record = await attendanceModel.findByIdWithDetails(attendanceId);
 
   if (!record) {
     throw new appError(
@@ -58,18 +52,7 @@ const updateAttendance = async (
   attendanceId: string,
   data: { status?: string; date?: Date },
 ) => {
-  return prisma.attendanceRecord.update({
-    where: { id: attendanceId },
-    data: {
-      ...(data.status && { status: data.status }),
-      ...(data.date && { date: data.date }),
-    },
-    include: {
-      student: true,
-      classRoom: true,
-      subject: true,
-    },
-  });
+  return attendanceModel.updateById(attendanceId, data);
 };
 
 const listAttendance = async (params: {
@@ -86,7 +69,7 @@ const listAttendance = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.AttendanceRecordWhereInput = {};
   if (params.studentId) where.studentId = params.studentId;
   if (params.classRoomId) where.classRoomId = params.classRoomId;
   if (params.subjectId) where.subjectId = params.subjectId;
@@ -98,14 +81,14 @@ const listAttendance = async (params: {
   }
 
   const [records, total] = await Promise.all([
-    prisma.attendanceRecord.findMany({
+    attendanceModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: { [params.sortBy]: params.sortOrder },
-      include: { student: true, classRoom: true, subject: true },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.attendanceRecord.count({ where }),
+    attendanceModel.count(where),
   ]);
 
   return {
@@ -118,9 +101,7 @@ const listAttendance = async (params: {
 };
 
 const getAttendanceStats = async (studentId: string) => {
-  const records = await prisma.attendanceRecord.findMany({
-    where: { studentId },
-  });
+  const records = await attendanceModel.findManyByStudentId(studentId);
 
   const stats: any = {
     total: records.length,

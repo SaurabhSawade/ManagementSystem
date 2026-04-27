@@ -16,6 +16,11 @@ import bookRouter from "./v1/book.routes";
 import auditRouter from "./v1/audit.routes";
 
 const apiRouter = Router();
+const adminRouter = Router();
+const studentAreaRouter = Router();
+const teacherAreaRouter = Router();
+const accountantAreaRouter = Router();
+const libraryAreaRouter = Router();
 
 // Authentication & User Management
 apiRouter.use("/auth", authRouter);
@@ -39,5 +44,50 @@ apiRouter.use("/audit", auditRouter);
 
 // Data Operations
 apiRouter.use("/files", importRouter);
+
+// Role-based route namespaces
+adminRouter.use("/users", userRouter);
+adminRouter.use("/students", studentRouter);
+adminRouter.use("/teachers", teacherRouter);
+adminRouter.use("/classrooms", classroomRouter);
+adminRouter.use("/subjects", subjectRouter);
+adminRouter.use("/attendance", attendanceRouter);
+adminRouter.use("/marks", marksRouter);
+adminRouter.use("/exams", examRouter);
+adminRouter.use("/results", resultRouter);
+adminRouter.use("/fees", feeRouter);
+adminRouter.use("/books", bookRouter);
+adminRouter.use("/audit", auditRouter);
+adminRouter.use("/files", importRouter);
+
+studentAreaRouter.use("/profile", profileRouter);
+studentAreaRouter.use("/attendance", attendanceRouter);
+studentAreaRouter.use("/marks", marksRouter);
+studentAreaRouter.use("/results", resultRouter);
+studentAreaRouter.use("/fees", feeRouter);
+studentAreaRouter.use("/books", bookRouter);
+
+teacherAreaRouter.use("/profile", profileRouter);
+teacherAreaRouter.use("/students", studentRouter);
+teacherAreaRouter.use("/classrooms", classroomRouter);
+teacherAreaRouter.use("/subjects", subjectRouter);
+teacherAreaRouter.use("/attendance", attendanceRouter);
+teacherAreaRouter.use("/marks", marksRouter);
+teacherAreaRouter.use("/exams", examRouter);
+teacherAreaRouter.use("/results", resultRouter);
+
+accountantAreaRouter.use("/profile", profileRouter);
+accountantAreaRouter.use("/students", studentRouter);
+accountantAreaRouter.use("/fees", feeRouter);
+accountantAreaRouter.use("/files", importRouter);
+
+libraryAreaRouter.use("/profile", profileRouter);
+libraryAreaRouter.use("/books", bookRouter);
+
+apiRouter.use("/admin", adminRouter);
+apiRouter.use("/student", studentAreaRouter);
+apiRouter.use("/teacher", teacherAreaRouter);
+apiRouter.use("/accountant", accountantAreaRouter);
+apiRouter.use("/library", libraryAreaRouter);
 
 export default apiRouter;

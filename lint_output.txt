@@ -1,0 +1,38 @@
+
+> managementsystem@1.0.0 lint
+> tsc --noEmit
+
+src/controller/attendance.controller.ts(76,85): error TS2379: Argument of type '{ status: string | undefined; date: Date | undefined; }' is not assignable to parameter of type '{ status?: string; date?: Date; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'status' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/controller/book.controller.ts(51,61): error TS2379: Argument of type '{ title: string | undefined; author: string | undefined; totalCopies: number; }' is not assignable to parameter of type '{ title?: string; author?: string; totalCopies?: number; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'title' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/controller/classroom.controller.ts(46,81): error TS2379: Argument of type '{ name: string | undefined; section: string | undefined; }' is not assignable to parameter of type '{ name?: string; section?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'name' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/controller/exam.controller.ts(49,61): error TS2379: Argument of type '{ name: string | undefined; term: string | undefined; examDate: Date | undefined; }' is not assignable to parameter of type '{ name?: string; term?: string; examDate?: Date; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'name' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/controller/fee.controller.ts(54,63): error TS2379: Argument of type '{ amount: number; dueDate: Date | undefined; status: string | undefined; description: string | undefined; }' is not assignable to parameter of type '{ amount?: number; dueDate?: Date; status?: string; description?: string | null; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'dueDate' are incompatible.
+    Type 'Date | undefined' is not assignable to type 'Date'.
+      Type 'undefined' is not assignable to type 'Date'.
+src/controller/student.controller.ts(51,73): error TS2379: Argument of type '{ rollNumber: string | undefined; classRoomId: string | undefined; guardianName: string | undefined; }' is not assignable to parameter of type '{ rollNumber?: string; classRoomId?: string; guardianName?: string | null; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'rollNumber' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/controller/subject.controller.ts(46,73): error TS2379: Argument of type '{ name: string | undefined; code: string | undefined; }' is not assignable to parameter of type '{ name?: string; code?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'name' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/controller/teacher.controller.ts(50,73): error TS2379: Argument of type '{ employeeId: string | undefined; department: string | undefined; }' is not assignable to parameter of type '{ employeeId?: string; department?: string | null; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'employeeId' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/utils/pagination.ts(99,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

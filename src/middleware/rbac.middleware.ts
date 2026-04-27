@@ -72,9 +72,59 @@ const requirePermission = (permissionCode: string) => {
   };
 };
 
+const requireAnyPermission = (permissionCodes: string[]) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const userId = req.auth?.userId;
+
+    if (!userId) {
+      res.status(HTTP_STATUS.UNAUTHORIZED).json(
+        apiResponse.buildResponse({
+          status: HTTP_STATUS.UNAUTHORIZED,
+          success: false,
+          message: MESSAGES.UNAUTHORIZED,
+          type: "AUTH_ERROR",
+        }),
+      );
+      return;
+    }
+
+    const permission = await prisma.userRole.findFirst({
+      where: {
+        userId,
+        role: {
+          permissions: {
+            some: {
+              permission: {
+                code: {
+                  in: permissionCodes,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!permission) {
+      res.status(HTTP_STATUS.FORBIDDEN).json(
+        apiResponse.buildResponse({
+          status: HTTP_STATUS.FORBIDDEN,
+          success: false,
+          message: MESSAGES.FORBIDDEN,
+          type: "FORBIDDEN",
+        }),
+      );
+      return;
+    }
+
+    next();
+  };
+};
+
 const rbacMiddleware = {
   requireRoles,
   requirePermission,
+  requireAnyPermission,
 };
 
 export default rbacMiddleware;

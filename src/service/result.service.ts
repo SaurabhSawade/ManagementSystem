@@ -1,12 +1,11 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import marksModel from "../model/marks.model";
+import resultModel from "../model/result.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
 const getResultById = async (resultId: string) => {
-  const result = await prisma.result.findUnique({
-    where: { id: resultId },
-    include: { student: true, classRoom: true, exam: true },
-  });
+  const result = await resultModel.findByIdWithDetails(resultId);
 
   if (!result) {
     throw new appError(
@@ -31,21 +30,21 @@ const listResults = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.ResultWhereInput = {};
   if (params.studentId) where.studentId = params.studentId;
   if (params.examId) where.examId = params.examId;
   if (params.classRoomId) where.classRoomId = params.classRoomId;
   if (params.gradeFilter) where.grade = params.gradeFilter;
 
   const [results, total] = await Promise.all([
-    prisma.result.findMany({
+    resultModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: { [params.sortBy]: params.sortOrder },
-      include: { student: true, classRoom: true, exam: true },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.result.count({ where }),
+    resultModel.count(where),
   ]);
 
   return {
@@ -58,11 +57,7 @@ const listResults = async (params: {
 };
 
 const getStudentResults = async (studentId: string) => {
-  return prisma.result.findMany({
-    where: { studentId },
-    include: { exam: true, classRoom: true },
-    orderBy: { createdAt: "desc" },
-  });
+  return resultModel.findManyByStudentId(studentId);
 };
 
 const calculateAndCreateResult = async (
@@ -70,8 +65,10 @@ const calculateAndCreateResult = async (
   classRoomId: string,
   examId: string,
 ) => {
-  const marks = await prisma.mark.findMany({
-    where: { studentId, classRoomId, examId },
+  const marks = await marksModel.findManyForResultCalculation({
+    studentId,
+    classRoomId,
+    examId,
   });
 
   if (marks.length === 0) {
@@ -93,10 +90,13 @@ const calculateAndCreateResult = async (
   else if (percentage >= 60) grade = "D";
   else if (percentage >= 50) grade = "E";
 
-  return prisma.result.upsert({
-    where: { studentId_examId: { studentId, examId } },
-    update: { totalMarks, percentage, grade, classRoomId },
-    create: { studentId, classRoomId, examId, totalMarks, percentage, grade },
+  return resultModel.upsertResult({
+    studentId,
+    classRoomId,
+    examId,
+    totalMarks,
+    percentage,
+    grade,
   });
 };
 

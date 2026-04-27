@@ -62,6 +62,25 @@ const userController = {
     );
   }),
 
+  setUserBlockStatus: asyncHandler(async (req: Request, res: Response) => {
+    const result = await userService.setUserBlockStatus({
+      userId: String(req.params.userId),
+      actorId: req.auth!.userId,
+      isBlocked: req.body?.isBlocked,
+      reason: req.body?.reason,
+    });
+
+    return res.status(HTTP_STATUS.OK).json(
+      apiResponse.buildResponse({
+        status: HTTP_STATUS.OK,
+        success: true,
+        message: result.isBlocked ? MESSAGES.USER_BLOCKED : MESSAGES.USER_UNBLOCKED,
+        type: "SUCCESS",
+        data: result.user,
+      }),
+    );
+  }),
+
   forceResetPassword: asyncHandler(async (req: Request, res: Response) => {
     await userService.forceResetPassword({
       userId: String(req.params.userId),

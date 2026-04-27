@@ -1,4 +1,5 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import studentModel from "../model/student.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
@@ -8,9 +9,7 @@ const createStudent = async (
   classRoomId: string,
   guardianName?: string,
 ) => {
-  const existingStudent = await prisma.studentProfile.findUnique({
-    where: { rollNumber },
-  });
+  const existingStudent = await studentModel.findByRollNumber(rollNumber);
 
   if (existingStudent) {
     throw new appError(
@@ -20,28 +19,16 @@ const createStudent = async (
     );
   }
 
-  return prisma.studentProfile.create({
-    data: {
-      userId,
-      rollNumber,
-      classRoomId,
-      ...(guardianName && { guardianName }),
-    },
-    include: {
-      user: { select: { id: true, username: true, email: true } },
-      classRoom: true,
-    },
+  return studentModel.create({
+    userId,
+    rollNumber,
+    classRoomId,
+    ...(guardianName && { guardianName }),
   });
 };
 
 const getStudentById = async (studentId: string) => {
-  const student = await prisma.studentProfile.findUnique({
-    where: { id: studentId },
-    include: {
-      user: { select: { id: true, username: true, email: true, phone: true } },
-      classRoom: true,
-    },
-  });
+  const student = await studentModel.findByIdWithDetails(studentId);
 
   if (!student) {
     throw new appError(
@@ -63,9 +50,7 @@ const updateStudent = async (
   },
 ) => {
   if (data.rollNumber) {
-    const existingStudent = await prisma.studentProfile.findUnique({
-      where: { rollNumber: data.rollNumber },
-    });
+    const existingStudent = await studentModel.findByRollNumber(data.rollNumber);
 
     if (existingStudent && existingStudent.id !== studentId) {
       throw new appError(
@@ -76,18 +61,7 @@ const updateStudent = async (
     }
   }
 
-  return prisma.studentProfile.update({
-    where: { id: studentId },
-    data: {
-      ...(data.rollNumber && { rollNumber: data.rollNumber }),
-      ...(data.classRoomId && { classRoomId: data.classRoomId }),
-      ...(data.guardianName !== undefined && { guardianName: data.guardianName }),
-    },
-    include: {
-      user: { select: { id: true, username: true, email: true } },
-      classRoom: true,
-    },
-  });
+  return studentModel.updateById(studentId, data);
 };
 
 const listStudents = async (params: {
@@ -100,7 +74,7 @@ const listStudents = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.StudentProfileWhereInput = {};
   if (params.classRoomId) where.classRoomId = params.classRoomId;
   if (params.search) {
     where.OR = [
@@ -110,19 +84,14 @@ const listStudents = async (params: {
   }
 
   const [students, total] = await Promise.all([
-    prisma.studentProfile.findMany({
+    studentModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: {
-        [params.sortBy]: params.sortOrder,
-      },
-      include: {
-        user: { select: { id: true, username: true, email: true } },
-        classRoom: true,
-      },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.studentProfile.count({ where }),
+    studentModel.count(where),
   ]);
 
   return {
@@ -135,20 +104,11 @@ const listStudents = async (params: {
 };
 
 const deleteStudent = async (studentId: string) => {
-  return prisma.studentProfile.delete({
-    where: { id: studentId },
-  });
+  return studentModel.deleteById(studentId);
 };
 
 const getStudentsByClassroom = async (classRoomId: string) => {
-  return prisma.studentProfile.findMany({
-    where: { classRoomId },
-    include: {
-      user: { select: { id: true, username: true, email: true } },
-      classRoom: true,
-    },
-    orderBy: { rollNumber: "asc" },
-  });
+  return studentModel.findByClassroomId(classRoomId);
 };
 
 const studentService = {

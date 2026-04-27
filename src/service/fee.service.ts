@@ -1,4 +1,5 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import feeModel from "../model/fee.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
@@ -8,23 +9,16 @@ const createFeeRecord = async (
   dueDate: Date,
   description?: string,
 ) => {
-  return prisma.feeRecord.create({
-    data: {
-      userId,
-      amount,
-      dueDate,
-      ...(description && { description }),
-      status: "PENDING",
-    },
-    include: { user: { select: { id: true, username: true, email: true } } },
+  return feeModel.create({
+    userId,
+    amount,
+    dueDate,
+    ...(description && { description }),
   });
 };
 
 const getFeeById = async (feeId: string) => {
-  const fee = await prisma.feeRecord.findUnique({
-    where: { id: feeId },
-    include: { user: { select: { id: true, username: true, email: true } } },
-  });
+  const fee = await feeModel.findByIdWithUser(feeId);
 
   if (!fee) {
     throw new appError(
@@ -46,16 +40,7 @@ const updateFeeRecord = async (
     description?: string | null;
   },
 ) => {
-  return prisma.feeRecord.update({
-    where: { id: feeId },
-    data: {
-      ...(data.amount && { amount: data.amount }),
-      ...(data.dueDate && { dueDate: data.dueDate }),
-      ...(data.status && { status: data.status }),
-      ...(data.description !== undefined && { description: data.description }),
-    },
-    include: { user: { select: { id: true, username: true, email: true } } },
-  });
+  return feeModel.updateById(feeId, data);
 };
 
 const listFees = async (params: {
@@ -70,7 +55,7 @@ const listFees = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.FeeRecordWhereInput = {};
   if (params.userId) where.userId = params.userId;
   if (params.status) where.status = params.status;
   if (params.dateFrom || params.dateTo) {
@@ -80,14 +65,14 @@ const listFees = async (params: {
   }
 
   const [fees, total] = await Promise.all([
-    prisma.feeRecord.findMany({
+    feeModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: { [params.sortBy]: params.sortOrder },
-      include: { user: { select: { id: true, username: true, email: true } } },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.feeRecord.count({ where }),
+    feeModel.count(where),
   ]);
 
   return {
@@ -120,9 +105,7 @@ const markFeeAsPaid = async (
 };
 
 const getUserFeeStats = async (userId: string) => {
-  const fees = await prisma.feeRecord.findMany({
-    where: { userId },
-  });
+  const fees = await feeModel.findManyByUserId(userId);
 
   const stats = {
     totalFee: fees.reduce((sum, f) => sum + f.amount, 0),

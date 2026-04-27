@@ -1,4 +1,5 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import bookModel from "../model/book.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
@@ -8,9 +9,7 @@ const createBook = async (
   author: string,
   totalCopies: number,
 ) => {
-  const existingIsbn = await prisma.book.findUnique({
-    where: { isbn },
-  });
+  const existingIsbn = await bookModel.findByIsbn(isbn);
 
   if (existingIsbn) {
     throw new appError(
@@ -20,21 +19,16 @@ const createBook = async (
     );
   }
 
-  return prisma.book.create({
-    data: {
-      title,
-      isbn,
-      author,
-      totalCopies,
-      available: totalCopies,
-    },
+  return bookModel.create({
+    title,
+    isbn,
+    author,
+    totalCopies,
   });
 };
 
 const getBookById = async (bookId: string) => {
-  const book = await prisma.book.findUnique({
-    where: { id: bookId },
-  });
+  const book = await bookModel.findById(bookId);
 
   if (!book) {
     throw new appError(
@@ -55,14 +49,7 @@ const updateBook = async (
     totalCopies?: number;
   },
 ) => {
-  return prisma.book.update({
-    where: { id: bookId },
-    data: {
-      ...(data.title && { title: data.title }),
-      ...(data.author && { author: data.author }),
-      ...(data.totalCopies && { totalCopies: data.totalCopies }),
-    },
-  });
+  return bookModel.updateById(bookId, data);
 };
 
 const listBooks = async (params: {
@@ -76,7 +63,7 @@ const listBooks = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.BookWhereInput = {};
   if (params.search) {
     where.OR = [
       { title: { contains: params.search, mode: "insensitive" } },
@@ -87,13 +74,14 @@ const listBooks = async (params: {
   if (params.availableOnly) where.available = { gt: 0 };
 
   const [books, total] = await Promise.all([
-    prisma.book.findMany({
+    bookModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: { [params.sortBy]: params.sortOrder },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.book.count({ where }),
+    bookModel.count(where),
   ]);
 
   return {
@@ -116,29 +104,13 @@ const issueBook = async (bookId: string, userId: string, dueDate: Date) => {
     );
   }
 
-  await prisma.book.update({
-    where: { id: bookId },
-    data: { available: book.available - 1 },
-  });
+  await bookModel.updateAvailability(bookId, book.available - 1);
 
-  return prisma.bookIssue.create({
-    data: {
-      bookId,
-      userId,
-      issueDate: new Date(),
-      dueDate,
-    },
-    include: {
-      book: true,
-      user: { select: { id: true, username: true, email: true } },
-    },
-  });
+  return bookModel.createIssue({ bookId, userId, dueDate });
 };
 
 const returnBook = async (bookIssueId: string, fineAmount?: number) => {
-  const issue = await prisma.bookIssue.findUnique({
-    where: { id: bookIssueId },
-  });
+  const issue = await bookModel.findIssueById(bookIssueId);
 
   if (!issue) {
     throw new appError(
@@ -157,32 +129,13 @@ const returnBook = async (bookIssueId: string, fineAmount?: number) => {
   }
 
   const book = await getBookById(issue.bookId);
-  await prisma.book.update({
-    where: { id: issue.bookId },
-    data: { available: book.available + 1 },
-  });
+  await bookModel.updateAvailability(issue.bookId, book.available + 1);
 
-  return prisma.bookIssue.update({
-    where: { id: bookIssueId },
-    data: {
-      returnDate: new Date(),
-      fineAmount: fineAmount ?? 0,
-    },
-    include: {
-      book: true,
-      user: { select: { id: true, username: true, email: true } },
-    },
-  });
+  return bookModel.returnIssue(bookIssueId, fineAmount ?? 0);
 };
 
 const getBookIssueById = async (bookIssueId: string) => {
-  const issue = await prisma.bookIssue.findUnique({
-    where: { id: bookIssueId },
-    include: {
-      book: true,
-      user: { select: { id: true, username: true, email: true } },
-    },
-  });
+  const issue = await bookModel.findIssueByIdWithDetails(bookIssueId);
 
   if (!issue) {
     throw new appError(
@@ -206,24 +159,21 @@ const listBookIssues = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.BookIssueWhereInput = {};
   if (params.userId) where.userId = params.userId;
   if (params.bookId) where.bookId = params.bookId;
   if (params.status === "ACTIVE") where.returnDate = null;
   else if (params.status === "RETURNED") where.returnDate = { not: null };
 
   const [issues, total] = await Promise.all([
-    prisma.bookIssue.findMany({
+    bookModel.findManyIssues({
       where,
       skip,
       take: params.limit,
-      orderBy: { [params.sortBy]: params.sortOrder },
-      include: {
-        book: true,
-        user: { select: { id: true, username: true, email: true } },
-      },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.bookIssue.count({ where }),
+    bookModel.countIssues(where),
   ]);
 
   return {

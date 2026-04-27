@@ -1,4 +1,5 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import teacherModel from "../model/teacher.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
@@ -7,9 +8,7 @@ const createTeacher = async (
   employeeId: string,
   department?: string,
 ) => {
-  const existingTeacher = await prisma.teacherProfile.findUnique({
-    where: { employeeId },
-  });
+  const existingTeacher = await teacherModel.findByEmployeeId(employeeId);
 
   if (existingTeacher) {
     throw new appError(
@@ -19,25 +18,15 @@ const createTeacher = async (
     );
   }
 
-  return prisma.teacherProfile.create({
-    data: {
-      userId,
-      employeeId,
-      ...(department && { department }),
-    },
-    include: {
-      user: { select: { id: true, username: true, email: true } },
-    },
+  return teacherModel.create({
+    userId,
+    employeeId,
+    ...(department && { department }),
   });
 };
 
 const getTeacherById = async (teacherId: string) => {
-  const teacher = await prisma.teacherProfile.findUnique({
-    where: { id: teacherId },
-    include: {
-      user: { select: { id: true, username: true, email: true, phone: true } },
-    },
-  });
+  const teacher = await teacherModel.findByIdWithDetails(teacherId);
 
   if (!teacher) {
     throw new appError(
@@ -58,9 +47,7 @@ const updateTeacher = async (
   },
 ) => {
   if (data.employeeId) {
-    const existingTeacher = await prisma.teacherProfile.findUnique({
-      where: { employeeId: data.employeeId },
-    });
+    const existingTeacher = await teacherModel.findByEmployeeId(data.employeeId);
 
     if (existingTeacher && existingTeacher.id !== teacherId) {
       throw new appError(
@@ -71,16 +58,7 @@ const updateTeacher = async (
     }
   }
 
-  return prisma.teacherProfile.update({
-    where: { id: teacherId },
-    data: {
-      ...(data.employeeId && { employeeId: data.employeeId }),
-      ...(data.department !== undefined && { department: data.department }),
-    },
-    include: {
-      user: { select: { id: true, username: true, email: true } },
-    },
-  });
+  return teacherModel.updateById(teacherId, data);
 };
 
 const listTeachers = async (params: {
@@ -93,7 +71,7 @@ const listTeachers = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.TeacherProfileWhereInput = {};
   if (params.department) where.department = params.department;
   if (params.search) {
     where.OR = [
@@ -103,18 +81,14 @@ const listTeachers = async (params: {
   }
 
   const [teachers, total] = await Promise.all([
-    prisma.teacherProfile.findMany({
+    teacherModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: {
-        [params.sortBy]: params.sortOrder,
-      },
-      include: {
-        user: { select: { id: true, username: true, email: true } },
-      },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.teacherProfile.count({ where }),
+    teacherModel.count(where),
   ]);
 
   return {
@@ -127,9 +101,7 @@ const listTeachers = async (params: {
 };
 
 const deleteTeacher = async (teacherId: string) => {
-  return prisma.teacherProfile.delete({
-    where: { id: teacherId },
-  });
+  return teacherModel.deleteById(teacherId);
 };
 
 const teacherService = {

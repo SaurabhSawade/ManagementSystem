@@ -51,10 +51,11 @@ const createUser = async (params: {
   return user;
 };
 
-const blockUser = async (params: {
+const setUserBlockStatus = async (params: {
   userId: string;
-  reason: string;
   actorId: string;
+  isBlocked?: boolean;
+  reason?: string;
 }) => {
   const user = await userModel.findUserById(params.userId);
 
@@ -62,28 +63,26 @@ const blockUser = async (params: {
     throw new AppError(HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
   }
 
-  const updated = await userModel.updateBlockStatus({
-    userId: params.userId,
-    isBlocked: true,
-    blockedReason: params.reason,
-    blockedAt: new Date(),
-  });
+  const shouldBlock = typeof params.isBlocked === "boolean" ? params.isBlocked : !user.isBlocked;
 
-  await userModel.createAuditLog({
-    actorId: params.actorId,
-    targetId: params.userId,
-    action: "USER_BLOCK",
-    meta: { reason: params.reason },
-  });
+  if (shouldBlock) {
+    const reason = params.reason?.trim() || user.blockedReason || "Blocked by admin";
 
-  return updated;
-};
+    const updated = await userModel.updateBlockStatus({
+      userId: params.userId,
+      isBlocked: true,
+      blockedReason: reason,
+      blockedAt: new Date(),
+    });
 
-const unblockUser = async (params: { userId: string; actorId: string }) => {
-  const user = await userModel.findUserById(params.userId);
+    await userModel.createAuditLog({
+      actorId: params.actorId,
+      targetId: params.userId,
+      action: "USER_BLOCK",
+      meta: { reason },
+    });
 
-  if (!user) {
-    throw new AppError(HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
+    return { user: updated, isBlocked: true };
   }
 
   const updated = await userModel.updateBlockStatus({
@@ -99,7 +98,32 @@ const unblockUser = async (params: { userId: string; actorId: string }) => {
     action: "USER_UNBLOCK",
   });
 
-  return updated;
+  return { user: updated, isBlocked: false };
+};
+
+const blockUser = async (params: {
+  userId: string;
+  reason: string;
+  actorId: string;
+}) => {
+  const result = await setUserBlockStatus({
+    userId: params.userId,
+    actorId: params.actorId,
+    isBlocked: true,
+    reason: params.reason,
+  });
+
+  return result.user;
+};
+
+const unblockUser = async (params: { userId: string; actorId: string }) => {
+  const result = await setUserBlockStatus({
+    userId: params.userId,
+    actorId: params.actorId,
+    isBlocked: false,
+  });
+
+  return result.user;
 };
 
 const forceResetPassword = async (params: {
@@ -163,6 +187,7 @@ const userService = {
   createUser,
   blockUser,
   unblockUser,
+  setUserBlockStatus,
   forceResetPassword,
   grantAdmin,
   revokeAdmin,

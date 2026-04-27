@@ -1,15 +1,10 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import auditModel from "../model/audit.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
 const getAuditLogById = async (auditId: string) => {
-  const log = await prisma.auditLog.findUnique({
-    where: { id: auditId },
-    include: {
-      actor: { select: { id: true, username: true, email: true } },
-      targetUser: { select: { id: true, username: true, email: true } },
-    },
-  });
+  const log = await auditModel.findByIdWithDetails(auditId);
 
   if (!log) {
     throw new appError(
@@ -35,7 +30,7 @@ const listAuditLogs = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.AuditLogWhereInput = {};
   if (params.action) where.action = { contains: params.action, mode: "insensitive" };
   if (params.actorId) where.actorId = params.actorId;
   if (params.targetId) where.targetId = params.targetId;
@@ -46,17 +41,14 @@ const listAuditLogs = async (params: {
   }
 
   const [logs, total] = await Promise.all([
-    prisma.auditLog.findMany({
+    auditModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: { [params.sortBy]: params.sortOrder },
-      include: {
-        actor: { select: { id: true, username: true, email: true } },
-        targetUser: { select: { id: true, username: true, email: true } },
-      },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.auditLog.count({ where }),
+    auditModel.count(where),
   ]);
 
   return {
@@ -74,13 +66,11 @@ const createAuditLog = async (
   targetId?: string,
   meta?: Record<string, any>,
 ) => {
-  return prisma.auditLog.create({
-    data: {
-      action,
-      ...(actorId && { actorId }),
-      ...(targetId && { targetId }),
-      ...(meta && { meta }),
-    },
+  return auditModel.create({
+    action,
+    ...(actorId && { actorId }),
+    ...(targetId && { targetId }),
+    ...(meta && { meta }),
   });
 };
 

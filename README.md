@@ -68,11 +68,20 @@ src/
 
 ### User Management (`/api/v1/users`)
 - `POST /` - Create new user (ADMIN only)
+- `PATCH /:userId/block-status` - Set or toggle user block status using one endpoint
 - `PATCH /:userId/block` - Block user
 - `PATCH /:userId/unblock` - Unblock user
 - `PATCH /:userId/reset-password` - Admin reset password
 - `PATCH /:userId/grant-admin` - Grant admin role
 - `PATCH /:userId/revoke-admin` - Revoke admin role
+
+### Role-Based Route Namespaces
+- `GET /api/v1/admin/...` - Admin-oriented route grouping for management modules
+- `GET /api/v1/student/...` - Student-oriented route grouping for self-service modules
+- `GET /api/v1/teacher/...` - Teacher-oriented route grouping for teaching modules
+- `GET /api/v1/accountant/...` - Accountant-oriented route grouping for fee and reporting modules
+- `GET /api/v1/library/...` - Library-oriented route grouping for library operations
+- These are aliases for existing v1 routes and still enforce the same RBAC permissions
 
 ### Student Management (`/api/v1/students`)
 - `POST /` - Create student

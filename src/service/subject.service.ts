@@ -1,11 +1,10 @@
-import { prisma } from "../config/prisma";
+import type { Prisma } from "../generated/prisma/client";
+import subjectModel from "../model/subject.model";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
 const createSubject = async (name: string, code: string) => {
-  const existingCode = await prisma.subject.findUnique({
-    where: { code },
-  });
+  const existingCode = await subjectModel.findByCode(code);
 
   if (existingCode) {
     throw new appError(
@@ -15,15 +14,11 @@ const createSubject = async (name: string, code: string) => {
     );
   }
 
-  return prisma.subject.create({
-    data: { name, code },
-  });
+  return subjectModel.create(name, code);
 };
 
 const getSubjectById = async (subjectId: string) => {
-  const subject = await prisma.subject.findUnique({
-    where: { id: subjectId },
-  });
+  const subject = await subjectModel.findById(subjectId);
 
   if (!subject) {
     throw new appError(
@@ -44,9 +39,7 @@ const updateSubject = async (
   },
 ) => {
   if (data.code) {
-    const existingCode = await prisma.subject.findUnique({
-      where: { code: data.code },
-    });
+    const existingCode = await subjectModel.findByCode(data.code);
 
     if (existingCode && existingCode.id !== subjectId) {
       throw new appError(
@@ -57,13 +50,7 @@ const updateSubject = async (
     }
   }
 
-  return prisma.subject.update({
-    where: { id: subjectId },
-    data: {
-      ...(data.name && { name: data.name }),
-      ...(data.code && { code: data.code }),
-    },
-  });
+  return subjectModel.updateById(subjectId, data);
 };
 
 const listSubjects = async (params: {
@@ -75,7 +62,7 @@ const listSubjects = async (params: {
 }) => {
   const skip = (params.page - 1) * params.limit;
 
-  const where: any = {};
+  const where: Prisma.SubjectWhereInput = {};
   if (params.search) {
     where.OR = [
       { name: { contains: params.search, mode: "insensitive" } },
@@ -84,15 +71,14 @@ const listSubjects = async (params: {
   }
 
   const [subjects, total] = await Promise.all([
-    prisma.subject.findMany({
+    subjectModel.findMany({
       where,
       skip,
       take: params.limit,
-      orderBy: {
-        [params.sortBy]: params.sortOrder,
-      },
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
     }),
-    prisma.subject.count({ where }),
+    subjectModel.count(where),
   ]);
 
   return {
@@ -105,9 +91,7 @@ const listSubjects = async (params: {
 };
 
 const deleteSubject = async (subjectId: string) => {
-  return prisma.subject.delete({
-    where: { id: subjectId },
-  });
+  return subjectModel.deleteById(subjectId);
 };
 
 const subjectService = {

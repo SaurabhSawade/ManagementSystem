@@ -20,6 +20,14 @@ userRouter.post(
 );
 
 userRouter.patch(
+  "/:userId/block-status",
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
+  rbacMiddleware.requireAnyPermission([PERMISSIONS.USER_BLOCK, PERMISSIONS.USER_UNBLOCK]),
+  validateMiddleware.validate(userValidation.toggleUserBlockSchema),
+  userController.setUserBlockStatus,
+);
+
+userRouter.patch(
   "/:userId/block",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
   rbacMiddleware.requirePermission(PERMISSIONS.USER_BLOCK),
@@ -31,6 +39,7 @@ userRouter.patch(
   "/:userId/unblock",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
   rbacMiddleware.requirePermission(PERMISSIONS.USER_UNBLOCK),
+  validateMiddleware.validate(userValidation.toggleUserBlockSchema),
   userController.unblockUser,
 );
 
