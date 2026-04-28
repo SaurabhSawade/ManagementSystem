@@ -12,6 +12,15 @@ const createUser = async (params: {
   password: string;
   roles: string[];
   actorId: string;
+  studentProfile?: {
+    rollNumber: string;
+    classRoomId: string;
+    guardianName?: string;
+  };
+  teacherProfile?: {
+    employeeId: string;
+    department?: string;
+  };
 }) => {
   const userFilters: Prisma.UserWhereInput[] = [{ username: params.username }];
   if (params.email) {
@@ -33,12 +42,25 @@ const createUser = async (params: {
     throw new AppError(HTTP_STATUS.BAD_REQUEST, "Invalid roles in payload", "VALIDATION_ERROR");
   }
 
+  const requiresStudentProfile = params.roles.includes(ROLES.STUDENT);
+  const requiresTeacherProfile = params.roles.includes(ROLES.TEACHER);
+
+  if (requiresStudentProfile && !params.studentProfile) {
+    throw new AppError(HTTP_STATUS.BAD_REQUEST, "Student profile data is required for STUDENT role", "VALIDATION_ERROR");
+  }
+
+  if (requiresTeacherProfile && !params.teacherProfile) {
+    throw new AppError(HTTP_STATUS.BAD_REQUEST, "Teacher profile data is required for TEACHER role", "VALIDATION_ERROR");
+  }
+
   const user = await userModel.createUser({
     username: params.username,
     email: params.email ?? null,
     phone: params.phone ?? null,
     passwordHash: await passwordUtils.hashPassword(params.password),
     roleIds: roleRecords.map((role) => role.id),
+    studentProfile: params.studentProfile,
+    teacherProfile: params.teacherProfile,
   });
 
   await userModel.createAuditLog({

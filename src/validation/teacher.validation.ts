@@ -1,13 +1,5 @@
 import { z } from "zod";
 
-const createTeacherSchema = z.object({
-  body: z.object({
-    userId: z.string().uuid("Invalid user ID"),
-    employeeId: z.string().min(1).max(50),
-    department: z.string().min(2).max(100).optional(),
-  }),
-});
-
 const updateTeacherSchema = z.object({
   params: z.object({
     teacherId: z.string().uuid("Invalid teacher ID"),
@@ -36,7 +28,6 @@ const listTeachersSchema = z.object({
 });
 
 const teacherValidation = {
-  createTeacherSchema,
   updateTeacherSchema,
   getTeacherSchema,
   listTeachersSchema,

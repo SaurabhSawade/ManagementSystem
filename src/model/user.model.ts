@@ -28,6 +28,15 @@ const userModel = {
     phone: string | null;
     passwordHash: string;
     roleIds: string[];
+    studentProfile?: {
+      rollNumber: string;
+      classRoomId: string;
+      guardianName?: string;
+    };
+    teacherProfile?: {
+      employeeId: string;
+      department?: string;
+    };
   }) =>
     prisma.user.create({
       data: {
@@ -38,6 +47,40 @@ const userModel = {
         roles: {
           create: data.roleIds.map((roleId) => ({ roleId })),
         },
+        ...(data.studentProfile && {
+          studentProfile: {
+            create: {
+              rollNumber: data.studentProfile.rollNumber,
+              classRoomId: data.studentProfile.classRoomId,
+              ...(data.studentProfile.guardianName && {
+                guardianName: data.studentProfile.guardianName,
+              }),
+            },
+          },
+        }),
+        ...(data.teacherProfile && {
+          teacherProfile: {
+            create: {
+              employeeId: data.teacherProfile.employeeId,
+              ...(data.teacherProfile.department && {
+                department: data.teacherProfile.department,
+              }),
+            },
+          },
+        }),
+      },
+      include: {
+        roles: {
+          include: {
+            role: true,
+          },
+        },
+        studentProfile: {
+          include: {
+            classRoom: true,
+          },
+        },
+        teacherProfile: true,
       },
     }),
 

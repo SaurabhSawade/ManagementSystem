@@ -3,12 +3,10 @@ import attendanceRouter from "../attendance.routes";
 import bookRouter from "../book.routes";
 import feeRouter from "../fee.routes";
 import marksRouter from "../marks.routes";
-import profileRouter from "../profile.routes";
 import resultRouter from "../result.routes";
 
 const studentAreaRouter = Router();
 
-studentAreaRouter.use("/profile", profileRouter);
 studentAreaRouter.use("/attendance", attendanceRouter);
 studentAreaRouter.use("/marks", marksRouter);
 studentAreaRouter.use("/results", resultRouter);

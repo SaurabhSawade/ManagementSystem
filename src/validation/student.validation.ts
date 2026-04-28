@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-const createStudentSchema = z.object({
-  body: z.object({
-    userId: z.string().uuid("Invalid user ID"),
-    rollNumber: z.string().min(1).max(50),
-    classRoomId: z.string().uuid("Invalid classroom ID"),
-    guardianName: z.string().min(2).max(100).optional(),
-  }),
-});
-
 const updateStudentSchema = z.object({
   params: z.object({
     studentId: z.string().uuid("Invalid student ID"),
@@ -38,7 +29,6 @@ const listStudentsSchema = z.object({
 });
 
 const studentValidation = {
-  createStudentSchema,
   updateStudentSchema,
   getStudentSchema,
   listStudentsSchema,

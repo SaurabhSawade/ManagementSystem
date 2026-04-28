@@ -11,14 +11,6 @@ const studentRouter = Router();
 
 studentRouter.use(authMiddleware.requireAuth);
 
-studentRouter.post(
-  "/",
-  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
-  rbacMiddleware.requirePermission(PERMISSIONS.STUDENT_CREATE),
-  validateMiddleware.validate(studentValidation.createStudentSchema),
-  studentController.createStudent,
-);
-
 studentRouter.get(
   "/",
   rbacMiddleware.requirePermission(PERMISSIONS.STUDENT_LIST),

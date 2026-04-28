@@ -11,14 +11,6 @@ const teacherRouter = Router();
 
 teacherRouter.use(authMiddleware.requireAuth);
 
-teacherRouter.post(
-  "/",
-  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN]),
-  rbacMiddleware.requirePermission(PERMISSIONS.TEACHER_CREATE),
-  validateMiddleware.validate(teacherValidation.createTeacherSchema),
-  teacherController.createTeacher,
-);
-
 teacherRouter.get(
   "/",
   rbacMiddleware.requirePermission(PERMISSIONS.TEACHER_LIST),

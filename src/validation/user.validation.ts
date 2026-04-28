@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { ROLES } from "../constants/roles";
+
+const roleSchema = z.nativeEnum(ROLES);
 
 const createUserSchema = z.object({
   body: z.object({
@@ -6,7 +9,20 @@ const createUserSchema = z.object({
     email: z.string().email().optional(),
     phone: z.string().min(8).optional(),
     password: z.string().min(6),
-    roles: z.array(z.string()).min(1),
+    roles: z.array(roleSchema).min(1),
+    studentProfile: z
+      .object({
+        rollNumber: z.string().min(1).max(50),
+        classRoomId: z.string().uuid(),
+        guardianName: z.string().min(2).max(100).optional(),
+      })
+      .optional(),
+    teacherProfile: z
+      .object({
+        employeeId: z.string().min(1).max(50),
+        department: z.string().min(2).max(100).optional(),
+      })
+      .optional(),
   }),
 });
 

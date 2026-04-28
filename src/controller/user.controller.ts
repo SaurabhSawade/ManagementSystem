@@ -13,6 +13,8 @@ const userController = {
       phone: req.body.phone,
       password: req.body.password,
       roles: req.body.roles,
+      studentProfile: req.body.studentProfile,
+      teacherProfile: req.body.teacherProfile,
       actorId: req.auth!.userId,
     });
 
