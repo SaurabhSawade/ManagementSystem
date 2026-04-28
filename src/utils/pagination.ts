@@ -96,7 +96,7 @@ export const validateSortParams = (
   sortOrder: string,
   allowedFields: string[],
 ): { sortBy: string; sortOrder: "asc" | "desc" } => {
-  const validSortBy: string = allowedFields.includes(sortBy) ? sortBy : allowedFields[0];
+  const validSortBy: string = allowedFields.includes(sortBy) ? sortBy : (allowedFields[0] ?? sortBy);
   const validSortOrder: "asc" | "desc" = sortOrder === "desc" ? "desc" : "asc";
 
   return {

@@ -44,14 +44,17 @@ attendanceRouter.get(
 attendanceRouter.patch(
   "/:attendanceId",
   rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.TEACHER]),
-  rbacMiddleware.requirePermission(PERMISSIONS.ATTENDANCE_READ),
+  rbacMiddleware.requirePermission(PERMISSIONS.ATTENDANCE_UPDATE),
   validateMiddleware.validate(attendanceValidation.updateAttendanceSchema),
   attendanceController.updateAttendance,
 );
 
 attendanceRouter.get(
   "/stats/:studentId",
-  rbacMiddleware.requirePermission(PERMISSIONS.ATTENDANCE_READ),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.ATTENDANCE_READ,
+    PERMISSIONS.ATTENDANCE_READ_SELF,
+  ]),
   attendanceController.getAttendanceStats,
 );
 

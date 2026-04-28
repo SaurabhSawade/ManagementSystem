@@ -3,12 +3,20 @@ import attendanceService from "../service/attendance.service";
 import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
+import { ROLES, type RoleCode } from "../constants/roles";
+import { AppError } from "../utils/appError";
 
 const toQueryString = (value: unknown) =>
   typeof value === "string" ? value : undefined;
 
 const toQueryDate = (value: unknown) =>
   typeof value === "string" ? new Date(value) : undefined;
+
+const hasElevatedAttendanceAccess = (roles: RoleCode[]) =>
+  roles.some(
+    (role) =>
+      role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.TEACHER,
+  );
 
 const markAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { studentId, classRoomId, subjectId, date, status } = req.body;
@@ -73,10 +81,15 @@ const updateAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { attendanceId } = req.params;
   const { status, date } = req.body;
 
-  const attendance = await attendanceService.updateAttendance(String(attendanceId), {
-    status: typeof status === "string" ? status : undefined,
-    date: date ? new Date(String(date)) : undefined,
-  });
+  const updateData: {
+    status?: string;
+    date?: Date;
+  } = {};
+
+  if (typeof status === "string") updateData.status = status;
+  if (date) updateData.date = new Date(String(date));
+
+  const attendance = await attendanceService.updateAttendance(String(attendanceId), updateData);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -118,6 +131,16 @@ const listAttendance = asyncHandler(async (req: Request, res: Response) => {
 
 const getAttendanceStats = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  if (!hasElevatedAttendanceAccess(requesterRoles) && String(studentId) !== requesterId) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  }
 
   const stats = await attendanceService.getAttendanceStats(String(studentId));
 

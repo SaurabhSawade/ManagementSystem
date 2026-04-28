@@ -138,6 +138,29 @@ const userModel = {
       },
     }),
 
+  replaceUserRoles: (userId: string, roleIds: string[]) =>
+    prisma.$transaction(async (tx) => {
+      await tx.userRole.deleteMany({ where: { userId } });
+
+      if (roleIds.length > 0) {
+        await tx.userRole.createMany({
+          data: roleIds.map((roleId) => ({ userId, roleId })),
+          skipDuplicates: true,
+        });
+      }
+
+      return tx.user.findUnique({
+        where: { id: userId },
+        include: {
+          roles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      });
+    }),
+
   createAuditLog: (data: {
     actorId: string;
     targetId: string;

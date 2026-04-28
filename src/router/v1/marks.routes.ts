@@ -51,7 +51,10 @@ marksRouter.patch(
 
 marksRouter.get(
   "/student/:studentId",
-  rbacMiddleware.requirePermission(PERMISSIONS.MARKS_READ),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.MARKS_READ,
+    PERMISSIONS.MARKS_READ_SELF,
+  ]),
   marksController.getStudentMarks,
 );
 

@@ -3,12 +3,22 @@ import feeService from "../service/fee.service";
 import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
+import { ROLES, type RoleCode } from "../constants/roles";
+import { AppError } from "../utils/appError";
 
 const toQueryString = (value: unknown) =>
   typeof value === "string" ? value : undefined;
 
 const toQueryDate = (value: unknown) =>
   typeof value === "string" ? new Date(value) : undefined;
+
+const hasElevatedFeeAccess = (roles: RoleCode[]) =>
+  roles.some(
+    (role) =>
+      role === ROLES.SUPER_ADMIN ||
+      role === ROLES.ADMIN ||
+      role === ROLES.ACCOUNTANT,
+  );
 
 const createFee = asyncHandler(async (req: Request, res: Response) => {
   const { userId, amount, dueDate, description } = req.body;
@@ -33,8 +43,14 @@ const createFee = asyncHandler(async (req: Request, res: Response) => {
 
 const getFee = asyncHandler(async (req: Request, res: Response) => {
   const { feeId } = req.params;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
 
   const fee = await feeService.getFeeById(String(feeId));
+
+  if (!hasElevatedFeeAccess(requesterRoles) && fee.userId !== requesterId) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  }
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -51,12 +67,30 @@ const updateFee = asyncHandler(async (req: Request, res: Response) => {
   const { feeId } = req.params;
   const { amount, dueDate, status, description } = req.body;
 
-  const fee = await feeService.updateFeeRecord(String(feeId), {
-    amount: typeof amount === "number" ? amount : Number(amount),
-    dueDate: dueDate ? new Date(String(dueDate)) : undefined,
-    status: typeof status === "string" ? status : undefined,
-    description: typeof description === "string" ? description : undefined,
-  });
+  const updateData: {
+    amount?: number;
+    dueDate?: Date;
+    status?: string;
+    description?: string;
+  } = {};
+
+  if (amount !== undefined) {
+    updateData.amount = typeof amount === "number" ? amount : Number(amount);
+  }
+
+  if (dueDate) {
+    updateData.dueDate = new Date(String(dueDate));
+  }
+
+  if (typeof status === "string") {
+    updateData.status = status;
+  }
+
+  if (typeof description === "string") {
+    updateData.description = description;
+  }
+
+  const fee = await feeService.updateFeeRecord(String(feeId), updateData);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -71,11 +105,21 @@ const updateFee = asyncHandler(async (req: Request, res: Response) => {
 
 const listFees = asyncHandler(async (req: Request, res: Response) => {
   const { page = "1", limit = "10", userId, status, dateFrom, dateTo, sortBy = "dueDate", sortOrder = "asc" } = req.query;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  const effectiveUserId = hasElevatedFeeAccess(requesterRoles)
+    ? toQueryString(userId)
+    : requesterId;
 
   const result = await feeService.listFees({
     page: Number(page),
     limit: Number(limit),
-    userId: toQueryString(userId),
+    userId: effectiveUserId,
     status: toQueryString(status),
     dateFrom: toQueryDate(dateFrom),
     dateTo: toQueryDate(dateTo),
@@ -113,6 +157,16 @@ const markFeeAsPaid = asyncHandler(async (req: Request, res: Response) => {
 
 const getUserFeeStats = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  if (!hasElevatedFeeAccess(requesterRoles) && String(userId) !== requesterId) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  }
 
   const stats = await feeService.getUserFeeStats(String(userId));
 

@@ -56,11 +56,21 @@ const resetUserPasswordSchema = z.object({
   }),
 });
 
+const setUserRolesSchema = z.object({
+  params: z.object({
+    userId: z.string().uuid(),
+  }),
+  body: z.object({
+    roles: z.array(roleSchema).min(1),
+  }),
+});
+
 const userValidation = {
   createUserSchema,
   blockUserSchema,
   toggleUserBlockSchema,
   resetUserPasswordSchema,
+  setUserRolesSchema,
 };
 
 export default userValidation;

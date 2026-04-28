@@ -46,11 +46,17 @@ const updateExam = asyncHandler(async (req: Request, res: Response) => {
   const { examId } = req.params;
   const { name, term, examDate } = req.body;
 
-  const exam = await examService.updateExam(String(examId), {
-    name: typeof name === "string" ? name : undefined,
-    term: typeof term === "string" ? term : undefined,
-    examDate: examDate ? new Date(String(examDate)) : undefined,
-  });
+  const updateData: {
+    name?: string;
+    term?: string;
+    examDate?: Date;
+  } = {};
+
+  if (typeof name === "string") updateData.name = name;
+  if (typeof term === "string") updateData.term = term;
+  if (examDate) updateData.examDate = new Date(String(examDate));
+
+  const exam = await examService.updateExam(String(examId), updateData);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

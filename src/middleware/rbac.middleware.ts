@@ -10,6 +10,7 @@ const requireRoles = (allowedRoles: string[]) => {
     const hasRole = roles.some((role) => allowedRoles.includes(role));
 
     if (!hasRole) {
+      console.log("User roles:", roles);
       res.status(HTTP_STATUS.FORBIDDEN).json(
         apiResponse.buildResponse({
           status: HTTP_STATUS.FORBIDDEN,
@@ -57,6 +58,8 @@ const requirePermission = (permissionCode: string) => {
     });
 
     if (!permission) {
+      console.log("User ID:", userId);
+      console.log("Required permission:", permissionCode);
       res.status(HTTP_STATUS.FORBIDDEN).json(
         apiResponse.buildResponse({
           status: HTTP_STATUS.FORBIDDEN,

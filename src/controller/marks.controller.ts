@@ -3,9 +3,17 @@ import marksService from "../service/marks.service";
 import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
+import { ROLES, type RoleCode } from "../constants/roles";
+import { AppError } from "../utils/appError";
 
 const toQueryString = (value: unknown) =>
   typeof value === "string" ? value : undefined;
+
+const hasElevatedMarksAccess = (roles: RoleCode[]) =>
+  roles.some(
+    (role) =>
+      role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.TEACHER,
+  );
 
 const createMark = asyncHandler(async (req: Request, res: Response) => {
   const { studentId, classRoomId, subjectId, examId, marks, maxMarks } = req.body;
@@ -114,6 +122,16 @@ const listMarks = asyncHandler(async (req: Request, res: Response) => {
 
 const getStudentMarks = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  if (!hasElevatedMarksAccess(requesterRoles) && String(studentId) !== requesterId) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  }
 
   const marks = await marksService.getStudentMarks(String(studentId));
 

@@ -21,14 +21,20 @@ feeRouter.post(
 
 feeRouter.get(
   "/",
-  rbacMiddleware.requirePermission(PERMISSIONS.FEE_READ),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.FEE_READ,
+    PERMISSIONS.FEE_READ_SELF,
+  ]),
   validateMiddleware.validate(feeValidation.listFeesSchema),
   feeController.listFees,
 );
 
 feeRouter.get(
   "/:feeId",
-  rbacMiddleware.requirePermission(PERMISSIONS.FEE_READ),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.FEE_READ,
+    PERMISSIONS.FEE_READ_SELF,
+  ]),
   validateMiddleware.validate(feeValidation.getFeeSchema),
   feeController.getFee,
 );
@@ -51,7 +57,10 @@ feeRouter.post(
 
 feeRouter.get(
   "/stats/:userId",
-  rbacMiddleware.requirePermission(PERMISSIONS.FEE_READ_SELF),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.FEE_READ,
+    PERMISSIONS.FEE_READ_SELF,
+  ]),
   feeController.getUserFeeStats,
 );
 

@@ -128,6 +128,24 @@ const userController = {
       }),
     );
   }),
+
+    setUserRoles: asyncHandler(async (req: Request, res: Response) => {
+      const user = await userService.setUserRoles({
+        userId: String(req.params.userId),
+        roles: req.body.roles,
+        actorId: req.auth!.userId,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(
+        apiResponse.buildResponse({
+          status: HTTP_STATUS.OK,
+          success: true,
+          message: "User roles updated",
+          type: "SUCCESS",
+          data: user,
+        }),
+      );
+    }),
 };
 
 export default userController;

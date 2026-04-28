@@ -2,7 +2,7 @@
   "info": {
     "name": "College Management Backend",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Postman collection for the College Management Backend API with full academic and admin modules"
+    "description": "Postman collection for the current role-grouped College Management Backend API"
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:4000" },
@@ -25,10 +25,15 @@
   "item": [
     {
       "name": "Health",
-      "request": {
-        "method": "GET",
-        "url": "{{baseUrl}}/health"
-      }
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
     },
     {
       "name": "Auth",
@@ -37,7 +42,9 @@
           "name": "Login",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"superadmin\",\n  \"password\": \"SuperAdmin@123\"\n}"
@@ -46,10 +53,12 @@
           }
         },
         {
-          "name": "Refresh",
+          "name": "Refresh Token",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
@@ -58,21 +67,15 @@
           }
         },
         {
-          "name": "Logout",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/auth/logout"
-          }
-        },
-        {
           "name": "Forgot Password Request OTP",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"superadmin@example.com\",\n  \"channel\": \"EMAIL\"\n}"
+              "raw": "{\n  \"email\": \"superadmin@example.com\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/forgot-password/request-otp"
           }
@@ -81,12 +84,24 @@
           "name": "Forgot Password Verify OTP",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"superadmin@example.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewStrongPassword@123\"\n}"
+              "raw": "{\n  \"email\": \"superadmin@example.com\" ,\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewStrongPassword@123\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/forgot-password/verify-otp"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/logout"
           }
         },
         {
@@ -99,83 +114,9 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"currentPassword\": \"SuperAdmin@123\",\n  \"newPassword\": \"NewStrongPassword@123\"\n}"
+              "raw": "{\n  \"oldPassword\": \"SuperAdmin@123\",\n  \"newPassword\": \"NewStrongPassword@123\"\n}"
             },
             "url": "{{baseUrl}}/api/v1/auth/reset-password"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Users",
-      "item": [
-        {
-          "name": "Create User",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"student1\",\n  \"email\": \"student1@example.com\",\n  \"password\": \"Student@123\",\n  \"roles\": [\"STUDENT\"]\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/users"
-          }
-        },
-        {
-          "name": "Block User",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"Policy violation\"\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/users/{{userId}}/block"
-          }
-        },
-        {
-          "name": "Unblock User",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/users/{{userId}}/unblock"
-          }
-        },
-        {
-          "name": "Force Reset Password",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"newPassword\": \"TempPass@123\"\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/users/{{userId}}/reset-password"
-          }
-        },
-        {
-          "name": "Grant Admin",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/users/{{userId}}/grant-admin"
-          }
-        },
-        {
-          "name": "Revoke Admin",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/users/{{userId}}/revoke-admin"
           }
         }
       ]
@@ -187,17 +128,19 @@
           "name": "Get My Profile",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
             "url": "{{baseUrl}}/api/v1/profile/me"
           }
         }
       ]
     },
     {
-      "name": "Students",
+      "name": "Admin",
       "item": [
         {
-          "name": "Create Student",
+          "name": "Create User",
           "request": {
             "method": "POST",
             "header": [
@@ -206,25 +149,79 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"rollNumber\": \"R-1001\",\n  \"classRoomId\": \"{{classroomId}}\",\n  \"guardianName\": \"Parent Name\"\n}"
+              "raw": "{\n  \"username\": \"student01\",\n  \"email\": \"student01@college.edu\",\n  \"phone\": \"9876543210\",\n  \"password\": \"Student@123\",\n  \"roles\": [\"STUDENT\"],\n  \"studentProfile\": {\n    \"rollNumber\": \"STU-2026-001\",\n    \"classRoomId\": \"{{classroomId}}\",\n    \"guardianName\": \"John Doe\"\n  }\n}"
             },
-            "url": "{{baseUrl}}/api/v1/students"
+            "url": "{{baseUrl}}/api/v1/admin/users"
+          }
+        },
+        {
+          "name": "Block or Unblock User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isBlocked\": true,\n  \"reason\": \"Policy violation\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/users/{{userId}}/block-status"
+          }
+        },
+        {
+          "name": "Reset User Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"Reset@123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/users/{{userId}}/reset-password"
+          }
+        },
+        {
+          "name": "Grant Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/users/{{userId}}/grant-admin"
+          }
+        },
+        {
+          "name": "Revoke Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/users/{{userId}}/revoke-admin"
           }
         },
         {
           "name": "List Students",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/students?page=1&limit=10&sortBy=rollNumber&sortOrder=asc"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/students?page=1&limit=10&sortBy=rollNumber&sortOrder=asc"
           }
         },
         {
           "name": "Get Student",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/students/{{studentId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/students/{{studentId}}"
           }
         },
         {
@@ -239,51 +236,37 @@
               "mode": "raw",
               "raw": "{\n  \"guardianName\": \"Updated Guardian\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/students/{{studentId}}"
+            "url": "{{baseUrl}}/api/v1/admin/students/{{studentId}}"
           }
         },
         {
           "name": "Delete Student",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/students/{{studentId}}"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Teachers",
-      "item": [
-        {
-          "name": "Create Teacher",
-          "request": {
-            "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"employeeId\": \"EMP-1001\",\n  \"department\": \"Science\"\n}"
-            },
-            "url": "{{baseUrl}}/api/v1/teachers"
+            "url": "{{baseUrl}}/api/v1/admin/students/{{studentId}}"
           }
         },
         {
           "name": "List Teachers",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/teachers?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/teachers?page=1&limit=10&sortBy=employeeId&sortOrder=asc"
           }
         },
         {
           "name": "Get Teacher",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/teachers/{{teacherId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/teachers/{{teacherId}}"
           }
         },
         {
@@ -298,22 +281,19 @@
               "mode": "raw",
               "raw": "{\n  \"department\": \"Mathematics\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/teachers/{{teacherId}}"
+            "url": "{{baseUrl}}/api/v1/admin/teachers/{{teacherId}}"
           }
         },
         {
           "name": "Delete Teacher",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/teachers/{{teacherId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/teachers/{{teacherId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Classrooms",
-      "item": [
+        },
         {
           "name": "Create Classroom",
           "request": {
@@ -326,23 +306,27 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"Grade 10\",\n  \"section\": \"A\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/classrooms"
+            "url": "{{baseUrl}}/api/v1/admin/classrooms"
           }
         },
         {
           "name": "List Classrooms",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/classrooms?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/classrooms?page=1&limit=10"
           }
         },
         {
           "name": "Get Classroom",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/classrooms/{{classroomId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/classrooms/{{classroomId}}"
           }
         },
         {
@@ -357,22 +341,19 @@
               "mode": "raw",
               "raw": "{\n  \"section\": \"B\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/classrooms/{{classroomId}}"
+            "url": "{{baseUrl}}/api/v1/admin/classrooms/{{classroomId}}"
           }
         },
         {
           "name": "Delete Classroom",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/classrooms/{{classroomId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/classrooms/{{classroomId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Subjects",
-      "item": [
+        },
         {
           "name": "Create Subject",
           "request": {
@@ -383,25 +364,29 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Physics\",\n  \"code\": \"PHY101\"\n}"
+              "raw": "{\n  \"name\": \"Mathematics\",\n  \"code\": \"MATH101\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/subjects"
+            "url": "{{baseUrl}}/api/v1/admin/subjects"
           }
         },
         {
           "name": "List Subjects",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/subjects?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/subjects?page=1&limit=10"
           }
         },
         {
           "name": "Get Subject",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/subjects/{{subjectId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/subjects/{{subjectId}}"
           }
         },
         {
@@ -414,24 +399,21 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Advanced Physics\"\n}"
+              "raw": "{\n  \"name\": \"Advanced Mathematics\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/subjects/{{subjectId}}"
+            "url": "{{baseUrl}}/api/v1/admin/subjects/{{subjectId}}"
           }
         },
         {
           "name": "Delete Subject",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/subjects/{{subjectId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/subjects/{{subjectId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Attendance",
-      "item": [
+        },
         {
           "name": "Mark Attendance",
           "request": {
@@ -442,13 +424,13 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"classRoomId\": \"{{classroomId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"date\": \"2026-04-24T09:00:00.000Z\",\n  \"status\": \"PRESENT\"\n}"
+              "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"classRoomId\": \"{{classroomId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"date\": \"2026-04-28\",\n  \"status\": \"PRESENT\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/attendance"
+            "url": "{{baseUrl}}/api/v1/admin/attendance"
           }
         },
         {
-          "name": "Bulk Mark Attendance",
+          "name": "Bulk Attendance",
           "request": {
             "method": "POST",
             "header": [
@@ -457,25 +439,29 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"classRoomId\": \"{{classroomId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"date\": \"2026-04-24T09:00:00.000Z\",\n  \"attendance\": [\n    { \"studentId\": \"{{studentId}}\", \"status\": \"PRESENT\" }\n  ]\n}"
+              "raw": "{\n  \"attendance\": [\n    {\n      \"studentId\": \"{{studentId}}\",\n      \"classRoomId\": \"{{classroomId}}\",\n      \"subjectId\": \"{{subjectId}}\",\n      \"date\": \"2026-04-28\",\n      \"status\": \"PRESENT\"\n    }\n  ]\n}"
             },
-            "url": "{{baseUrl}}/api/v1/attendance/bulk"
+            "url": "{{baseUrl}}/api/v1/admin/attendance/bulk"
           }
         },
         {
           "name": "List Attendance",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/attendance?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/attendance?page=1&limit=10"
           }
         },
         {
           "name": "Get Attendance",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/attendance/{{attendanceId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/attendance/{{attendanceId}}"
           }
         },
         {
@@ -490,22 +476,19 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"ABSENT\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/attendance/{{attendanceId}}"
+            "url": "{{baseUrl}}/api/v1/admin/attendance/{{attendanceId}}"
           }
         },
         {
           "name": "Attendance Stats By Student",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/attendance/stats/{{studentId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/attendance/stats/{{studentId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Marks",
-      "item": [
+        },
         {
           "name": "Create Mark",
           "request": {
@@ -518,7 +501,7 @@
               "mode": "raw",
               "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"classRoomId\": \"{{classroomId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"examId\": \"{{examId}}\",\n  \"marks\": 85,\n  \"maxMarks\": 100\n}"
             },
-            "url": "{{baseUrl}}/api/v1/marks"
+            "url": "{{baseUrl}}/api/v1/admin/marks"
           }
         },
         {
@@ -531,25 +514,29 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"examId\": \"{{examId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"classRoomId\": \"{{classroomId}}\",\n  \"marks\": [\n    { \"studentId\": \"{{studentId}}\", \"marks\": 90, \"maxMarks\": 100 }\n  ]\n}"
+              "raw": "{\n  \"marks\": [\n    {\n      \"studentId\": \"{{studentId}}\",\n      \"classRoomId\": \"{{classroomId}}\",\n      \"subjectId\": \"{{subjectId}}\",\n      \"examId\": \"{{examId}}\",\n      \"marks\": 90,\n      \"maxMarks\": 100\n    }\n  ]\n}"
             },
-            "url": "{{baseUrl}}/api/v1/marks/bulk"
+            "url": "{{baseUrl}}/api/v1/admin/marks/bulk"
           }
         },
         {
           "name": "List Marks",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/marks?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/marks?page=1&limit=10"
           }
         },
         {
           "name": "Get Mark",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/marks/{{markId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/marks/{{markId}}"
           }
         },
         {
@@ -564,22 +551,19 @@
               "mode": "raw",
               "raw": "{\n  \"marks\": 88\n}"
             },
-            "url": "{{baseUrl}}/api/v1/marks/{{markId}}"
+            "url": "{{baseUrl}}/api/v1/admin/marks/{{markId}}"
           }
         },
         {
-          "name": "Get Student Marks",
+          "name": "Student Marks",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/marks/student/{{studentId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/marks/student/{{studentId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Exams",
-      "item": [
+        },
         {
           "name": "Create Exam",
           "request": {
@@ -592,23 +576,27 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"Mid Term\",\n  \"term\": \"TERM_1\",\n  \"examDate\": \"2026-05-10T09:00:00.000Z\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/exams"
+            "url": "{{baseUrl}}/api/v1/admin/exams"
           }
         },
         {
           "name": "List Exams",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/exams?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/exams?page=1&limit=10"
           }
         },
         {
           "name": "Get Exam",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/exams/{{examId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/exams/{{examId}}"
           }
         },
         {
@@ -623,28 +611,27 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"Updated Mid Term\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/exams/{{examId}}"
+            "url": "{{baseUrl}}/api/v1/admin/exams/{{examId}}"
           }
         },
         {
           "name": "Delete Exam",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/exams/{{examId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/exams/{{examId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Results",
-      "item": [
+        },
         {
           "name": "List Results",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/results?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/results?page=1&limit=10"
           }
         },
         {
@@ -659,30 +646,29 @@
               "mode": "raw",
               "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"examId\": \"{{examId}}\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/results/generate"
+            "url": "{{baseUrl}}/api/v1/admin/results/generate"
           }
         },
         {
           "name": "Get Result",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/results/{{resultId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/results/{{resultId}}"
           }
         },
         {
-          "name": "Get Student Results",
+          "name": "Get Student Result",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/results/student/{{studentId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/results/student/{{studentId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Fees",
-      "item": [
+        },
         {
           "name": "Create Fee",
           "request": {
@@ -695,23 +681,27 @@
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"amount\": 15000,\n  \"dueDate\": \"2026-06-01T00:00:00.000Z\",\n  \"description\": \"Tuition Fee\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/fees"
+            "url": "{{baseUrl}}/api/v1/admin/fees"
           }
         },
         {
           "name": "List Fees",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/fees?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/fees?page=1&limit=10"
           }
         },
         {
           "name": "Get Fee",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/fees/{{feeId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/fees/{{feeId}}"
           }
         },
         {
@@ -726,7 +716,7 @@
               "mode": "raw",
               "raw": "{\n  \"status\": \"OVERDUE\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/fees/{{feeId}}"
+            "url": "{{baseUrl}}/api/v1/admin/fees/{{feeId}}"
           }
         },
         {
@@ -741,22 +731,19 @@
               "mode": "raw",
               "raw": "{\n  \"paidAmount\": 5000,\n  \"paymentMethod\": \"ONLINE\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/fees/{{feeId}}/mark-paid"
+            "url": "{{baseUrl}}/api/v1/admin/fees/mark-paid/{{feeId}}"
           }
         },
         {
           "name": "User Fee Stats",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/fees/stats/{{userId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/fees/stats/{{userId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Books",
-      "item": [
+        },
         {
           "name": "Create Book",
           "request": {
@@ -769,23 +756,27 @@
               "mode": "raw",
               "raw": "{\n  \"title\": \"Algebra Fundamentals\",\n  \"isbn\": \"9781234567890\",\n  \"author\": \"John Doe\",\n  \"totalCopies\": 10\n}"
             },
-            "url": "{{baseUrl}}/api/v1/books"
+            "url": "{{baseUrl}}/api/v1/admin/books"
           }
         },
         {
           "name": "List Books",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/books?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/books?page=1&limit=10"
           }
         },
         {
           "name": "Get Book",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/books/{{bookId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/books/{{bookId}}"
           }
         },
         {
@@ -800,7 +791,7 @@
               "mode": "raw",
               "raw": "{\n  \"totalCopies\": 12\n}"
             },
-            "url": "{{baseUrl}}/api/v1/books/{{bookId}}"
+            "url": "{{baseUrl}}/api/v1/admin/books/{{bookId}}"
           }
         },
         {
@@ -815,7 +806,7 @@
               "mode": "raw",
               "raw": "{\n  \"bookId\": \"{{bookId}}\",\n  \"userId\": \"{{userId}}\",\n  \"dueDate\": \"2026-05-15T00:00:00.000Z\"\n}"
             },
-            "url": "{{baseUrl}}/api/v1/books/issue"
+            "url": "{{baseUrl}}/api/v1/admin/books/issue"
           }
         },
         {
@@ -830,56 +821,56 @@
               "mode": "raw",
               "raw": "{\n  \"fine\": 0\n}"
             },
-            "url": "{{baseUrl}}/api/v1/books/{{bookIssueId}}/return"
+            "url": "{{baseUrl}}/api/v1/admin/books/{{bookIssueId}}/return"
           }
         },
         {
           "name": "List Book Issues",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/books/issues/list?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/books/issues/list?page=1&limit=10"
           }
         },
         {
           "name": "Get Book Issue",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/books/issues/{{bookIssueId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/books/issues/{{bookIssueId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Audit",
-      "item": [
+        },
         {
           "name": "List Audit Logs",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/audit?page=1&limit=10"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/audit?page=1&limit=10"
           }
         },
         {
           "name": "Get Audit Log",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/audit/{{auditId}}"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/audit/{{auditId}}"
           }
-        }
-      ]
-    },
-    {
-      "name": "Files",
-      "item": [
+        },
         {
           "name": "Import Excel",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -890,15 +881,647 @@
                 }
               ]
             },
-            "url": "{{baseUrl}}/api/v1/files/import"
+            "url": "{{baseUrl}}/api/v1/admin/files/import"
           }
         },
         {
           "name": "Export Excel",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": "{{baseUrl}}/api/v1/files/export"
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/admin/files/export"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student",
+      "item": [
+        {
+          "name": "List Attendance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/attendance?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Attendance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/attendance/{{attendanceId}}"
+          }
+        },
+        {
+          "name": "Attendance Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/attendance/stats/{{studentId}}"
+          }
+        },
+        {
+          "name": "List Marks",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/marks?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Mark",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/marks/{{markId}}"
+          }
+        },
+        {
+          "name": "List Results",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/results?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Result",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/results/{{resultId}}"
+          }
+        },
+        {
+          "name": "Student Fee Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/fees?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Student Books",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/books?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Student Book Issue",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/student/books/issues/{{bookIssueId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teacher",
+      "item": [
+        {
+          "name": "List Students",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/students?page=1&limit=10"
+          }
+        },
+        {
+          "name": "List Classrooms",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/classrooms?page=1&limit=10"
+          }
+        },
+        {
+          "name": "List Subjects",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/subjects?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Mark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"classRoomId\": \"{{classroomId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"date\": \"2026-04-28\",\n  \"status\": \"PRESENT\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/attendance"
+          }
+        },
+        {
+          "name": "Bulk Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attendance\": [\n    {\n      \"studentId\": \"{{studentId}}\",\n      \"classRoomId\": \"{{classroomId}}\",\n      \"subjectId\": \"{{subjectId}}\",\n      \"date\": \"2026-04-28\",\n      \"status\": \"PRESENT\"\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/attendance/bulk"
+          }
+        },
+        {
+          "name": "List Attendance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/attendance?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Attendance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/attendance/{{attendanceId}}"
+          }
+        },
+        {
+          "name": "Update Attendance",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ABSENT\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/attendance/{{attendanceId}}"
+          }
+        },
+        {
+          "name": "Attendance Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/attendance/stats/{{studentId}}"
+          }
+        },
+        {
+          "name": "Create Mark",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"classRoomId\": \"{{classroomId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"examId\": \"{{examId}}\",\n  \"marks\": 85,\n  \"maxMarks\": 100\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/marks"
+          }
+        },
+        {
+          "name": "Bulk Create Marks",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marks\": [\n    {\n      \"studentId\": \"{{studentId}}\",\n      \"classRoomId\": \"{{classroomId}}\",\n      \"subjectId\": \"{{subjectId}}\",\n      \"examId\": \"{{examId}}\",\n      \"marks\": 90,\n      \"maxMarks\": 100\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/marks/bulk"
+          }
+        },
+        {
+          "name": "List Marks",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/marks?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Mark",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/marks/{{markId}}"
+          }
+        },
+        {
+          "name": "Update Mark",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"marks\": 88\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/marks/{{markId}}"
+          }
+        },
+        {
+          "name": "Student Marks",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/marks/student/{{studentId}}"
+          }
+        },
+        {
+          "name": "Create Exam",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mid Term\",\n  \"term\": \"TERM_1\",\n  \"examDate\": \"2026-05-10T09:00:00.000Z\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/exams"
+          }
+        },
+        {
+          "name": "List Exams",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/exams?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Exam",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/exams/{{examId}}"
+          }
+        },
+        {
+          "name": "Update Exam",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Mid Term\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/exams/{{examId}}"
+          }
+        },
+        {
+          "name": "Delete Exam",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/exams/{{examId}}"
+          }
+        },
+        {
+          "name": "List Results",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/results?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Result",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/results/{{resultId}}"
+          }
+        },
+        {
+          "name": "Generate Result",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"examId\": \"{{examId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/teacher/results/generate"
+          }
+        },
+        {
+          "name": "Student Result",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/teacher/results/student/{{studentId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accountant",
+      "item": [
+        {
+          "name": "List Students",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/accountant/students?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Student",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/accountant/students/{{studentId}}"
+          }
+        },
+        {
+          "name": "List Fees",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/accountant/fees?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Create Fee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"amount\": 15000,\n  \"dueDate\": \"2026-06-01T00:00:00.000Z\",\n  \"description\": \"Tuition Fee\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/accountant/fees"
+          }
+        },
+        {
+          "name": "Get Fee",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/accountant/fees/{{feeId}}"
+          }
+        },
+        {
+          "name": "Update Fee",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"OVERDUE\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/accountant/fees/{{feeId}}"
+          }
+        },
+        {
+          "name": "Mark Fee Paid",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paidAmount\": 5000,\n  \"paymentMethod\": \"ONLINE\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/accountant/fees/mark-paid/{{feeId}}"
+          }
+        },
+        {
+          "name": "User Fee Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/accountant/fees/stats/{{userId}}"
+          }
+        },
+        {
+          "name": "Import Excel",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/v1/accountant/files/import"
+          }
+        },
+        {
+          "name": "Export Excel",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/accountant/files/export"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Library",
+      "item": [
+        {
+          "name": "Create Book",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Algebra Fundamentals\",\n  \"isbn\": \"9781234567890\",\n  \"author\": \"John Doe\",\n  \"totalCopies\": 10\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/library/books"
+          }
+        },
+        {
+          "name": "List Books",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/library/books?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Book",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/library/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Update Book",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"totalCopies\": 12\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/library/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Issue Book",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookId\": \"{{bookId}}\",\n  \"userId\": \"{{userId}}\",\n  \"dueDate\": \"2026-05-15T00:00:00.000Z\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/library/books/issue"
+          }
+        },
+        {
+          "name": "Return Book",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fine\": 0\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/library/books/{{bookIssueId}}/return"
+          }
+        },
+        {
+          "name": "List Book Issues",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/library/books/issues/list?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Get Book Issue",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/library/books/issues/{{bookIssueId}}"
           }
         }
       ]

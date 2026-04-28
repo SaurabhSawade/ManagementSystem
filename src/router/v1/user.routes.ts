@@ -65,4 +65,12 @@ userRouter.patch(
   userController.revokeAdmin,
 );
 
+userRouter.patch(
+  "/roles/:userId",
+  rbacMiddleware.requireRoles([ROLES.SUPER_ADMIN]),
+  rbacMiddleware.requirePermission(PERMISSIONS.ADMIN_GRANT),
+  validateMiddleware.validate(userValidation.setUserRolesSchema),
+  userController.setUserRoles,
+);
+
 export default userRouter;

@@ -2,9 +2,11 @@ import app from "./app";
 import { env } from "./config/env";
 import { logger } from "./config/logger";
 import { prisma } from "./config/prisma";
+import syncRbac from "./config/rbacSync";
 
 const startServer = async () => {
 	await prisma.$connect();
+	await syncRbac();
 
 	const server = app.listen(env.PORT, () => {
 		logger.info(`Server running on port ${env.PORT}`);

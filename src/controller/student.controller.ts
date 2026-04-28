@@ -48,11 +48,17 @@ const updateStudent = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
   const { rollNumber, classRoomId, guardianName } = req.body;
 
-  const student = await studentService.updateStudent(String(studentId), {
-    rollNumber: typeof rollNumber === "string" ? rollNumber : undefined,
-    classRoomId: typeof classRoomId === "string" ? classRoomId : undefined,
-    guardianName: guardianName === undefined ? undefined : String(guardianName),
-  });
+  const updateData: {
+    rollNumber?: string;
+    classRoomId?: string;
+    guardianName?: string | null;
+  } = {};
+
+  if (typeof rollNumber === "string") updateData.rollNumber = rollNumber;
+  if (typeof classRoomId === "string") updateData.classRoomId = classRoomId;
+  if (guardianName !== undefined) updateData.guardianName = String(guardianName);
+
+  const student = await studentService.updateStudent(String(studentId), updateData);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

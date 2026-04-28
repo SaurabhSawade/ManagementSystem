@@ -43,10 +43,15 @@ const updateClassroom = asyncHandler(async (req: Request, res: Response) => {
   const { classroomId } = req.params;
   const { name, section } = req.body;
 
-  const classroom = await classroomService.updateClassroom(String(classroomId), {
-    name: typeof name === "string" ? name : undefined,
-    section: typeof section === "string" ? section : undefined,
-  });
+  const updateData: {
+    name?: string;
+    section?: string;
+  } = {};
+
+  if (typeof name === "string") updateData.name = name;
+  if (typeof section === "string") updateData.section = section;
+
+  const classroom = await classroomService.updateClassroom(String(classroomId), updateData);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

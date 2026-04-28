@@ -3,9 +3,17 @@ import resultService from "../service/result.service";
 import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
+import { ROLES, type RoleCode } from "../constants/roles";
+import { AppError } from "../utils/appError";
 
 const toQueryString = (value: unknown) =>
   typeof value === "string" ? value : undefined;
+
+const hasElevatedResultAccess = (roles: RoleCode[]) =>
+  roles.some(
+    (role) =>
+      role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN || role === ROLES.TEACHER,
+  );
 
 const getResult = asyncHandler(async (req: Request, res: Response) => {
   const { resultId } = req.params;
@@ -50,6 +58,16 @@ const listResults = asyncHandler(async (req: Request, res: Response) => {
 
 const getStudentResults = asyncHandler(async (req: Request, res: Response) => {
   const { studentId } = req.params;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  if (!hasElevatedResultAccess(requesterRoles) && String(studentId) !== requesterId) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  }
 
   const results = await resultService.getStudentResults(String(studentId));
 

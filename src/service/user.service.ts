@@ -59,8 +59,8 @@ const createUser = async (params: {
     phone: params.phone ?? null,
     passwordHash: await passwordUtils.hashPassword(params.password),
     roleIds: roleRecords.map((role) => role.id),
-    studentProfile: params.studentProfile,
-    teacherProfile: params.teacherProfile,
+    ...(params.studentProfile && { studentProfile: params.studentProfile }),
+    ...(params.teacherProfile && { teacherProfile: params.teacherProfile }),
   });
 
   await userModel.createAuditLog({
@@ -205,6 +205,36 @@ const revokeAdmin = async (params: { userId: string; actorId: string }) => {
   });
 };
 
+const setUserRoles = async (params: {
+  userId: string;
+  roles: string[];
+  actorId: string;
+}) => {
+  const user = await userModel.findUserById(params.userId);
+  if (!user) {
+    throw new AppError(HTTP_STATUS.NOT_FOUND, "User not found", "NOT_FOUND");
+  }
+
+  const roleRecords = await userModel.findRolesByCodes(params.roles);
+  if (roleRecords.length !== params.roles.length) {
+    throw new AppError(HTTP_STATUS.BAD_REQUEST, "Invalid roles in payload", "VALIDATION_ERROR");
+  }
+
+  const updated = await userModel.replaceUserRoles(
+    params.userId,
+    roleRecords.map((role) => role.id),
+  );
+
+  await userModel.createAuditLog({
+    actorId: params.actorId,
+    targetId: params.userId,
+    action: "USER_ROLES_UPDATED",
+    meta: { roles: params.roles },
+  });
+
+  return updated;
+};
+
 const userService = {
   createUser,
   blockUser,
@@ -213,6 +243,7 @@ const userService = {
   forceResetPassword,
   grantAdmin,
   revokeAdmin,
+  setUserRoles,
 };
 
 export default userService;

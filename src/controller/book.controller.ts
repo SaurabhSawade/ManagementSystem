@@ -48,11 +48,19 @@ const updateBook = asyncHandler(async (req: Request, res: Response) => {
   const { bookId } = req.params;
   const { title, author, totalCopies } = req.body;
 
-  const book = await bookService.updateBook(String(bookId), {
-    title: typeof title === "string" ? title : undefined,
-    author: typeof author === "string" ? author : undefined,
-    totalCopies: typeof totalCopies === "number" ? totalCopies : Number(totalCopies),
-  });
+  const updateData: {
+    title?: string;
+    author?: string;
+    totalCopies?: number;
+  } = {};
+
+  if (typeof title === "string") updateData.title = title;
+  if (typeof author === "string") updateData.author = author;
+  if (totalCopies !== undefined) {
+    updateData.totalCopies = typeof totalCopies === "number" ? totalCopies : Number(totalCopies);
+  }
+
+  const book = await bookService.updateBook(String(bookId), updateData);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

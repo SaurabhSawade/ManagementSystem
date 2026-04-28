@@ -47,10 +47,15 @@ const updateTeacher = asyncHandler(async (req: Request, res: Response) => {
   const { teacherId } = req.params;
   const { employeeId, department } = req.body;
 
-  const teacher = await teacherService.updateTeacher(String(teacherId), {
-    employeeId: typeof employeeId === "string" ? employeeId : undefined,
-    department: department === undefined ? undefined : String(department),
-  });
+  const updateData: {
+    employeeId?: string;
+    department?: string | null;
+  } = {};
+
+  if (typeof employeeId === "string") updateData.employeeId = employeeId;
+  if (department !== undefined) updateData.department = String(department);
+
+  const teacher = await teacherService.updateTeacher(String(teacherId), updateData);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

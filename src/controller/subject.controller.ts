@@ -43,10 +43,15 @@ const updateSubject = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
   const { name, code } = req.body;
 
-  const subject = await subjectService.updateSubject(String(subjectId), {
-    name: typeof name === "string" ? name : undefined,
-    code: typeof code === "string" ? code : undefined,
-  });
+  const updateData: {
+    name?: string;
+    code?: string;
+  } = {};
+
+  if (typeof name === "string") updateData.name = name;
+  if (typeof code === "string") updateData.code = code;
+
+  const subject = await subjectService.updateSubject(String(subjectId), updateData);
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({

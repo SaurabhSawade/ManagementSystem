@@ -33,7 +33,10 @@ resultRouter.post(
 
 resultRouter.get(
   "/student/:studentId",
-  rbacMiddleware.requirePermission(PERMISSIONS.RESULT_READ_SELF),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.RESULT_READ,
+    PERMISSIONS.RESULT_READ_SELF,
+  ]),
   resultController.getStudentResults,
 );
 
