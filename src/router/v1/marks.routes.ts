@@ -29,7 +29,10 @@ marksRouter.post(
 
 marksRouter.get(
   "/",
-  rbacMiddleware.requirePermission(PERMISSIONS.MARKS_READ),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.MARKS_READ,
+    PERMISSIONS.MARKS_READ_SELF,
+  ]),
   validateMiddleware.validate(marksValidation.listMarksSchema),
   marksController.listMarks,
 );

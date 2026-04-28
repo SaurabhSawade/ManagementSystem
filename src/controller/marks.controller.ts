@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import marksService from "../service/marks.service";
+import studentModel from "../model/student.model";
 import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
@@ -97,11 +98,28 @@ const updateMark = asyncHandler(async (req: Request, res: Response) => {
 
 const listMarks = asyncHandler(async (req: Request, res: Response) => {
   const { page = "1", limit = "10", studentId, subjectId, examId, classRoomId, sortBy = "marks", sortOrder = "desc" } = req.query;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  const hasSelfOnlyAccess = requesterRoles.includes(ROLES.STUDENT) && !hasElevatedMarksAccess(requesterRoles);
+  const studentProfile = hasSelfOnlyAccess ? await studentModel.findByUserId(requesterId) : null;
+
+  if (hasSelfOnlyAccess && !studentProfile) {
+    throw new AppError(HTTP_STATUS.NOT_FOUND, "Student profile not found", "NOT_FOUND");
+  }
+
+  if (hasSelfOnlyAccess && studentId && String(studentId) !== studentProfile!.id) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  }
 
   const result = await marksService.listMarks({
     page: Number(page),
     limit: Number(limit),
-    studentId: toQueryString(studentId),
+    studentId: hasSelfOnlyAccess ? studentProfile!.id : toQueryString(studentId),
     subjectId: toQueryString(subjectId),
     examId: toQueryString(examId),
     classRoomId: toQueryString(classRoomId),
@@ -129,8 +147,16 @@ const getStudentMarks = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
   }
 
-  if (!hasElevatedMarksAccess(requesterRoles) && String(studentId) !== requesterId) {
-    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  if (!hasElevatedMarksAccess(requesterRoles)) {
+    const studentProfile = await studentModel.findByUserId(requesterId);
+
+    if (!studentProfile) {
+      throw new AppError(HTTP_STATUS.NOT_FOUND, "Student profile not found", "NOT_FOUND");
+    }
+
+    if (String(studentId) !== studentProfile.id) {
+      throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+    }
   }
 
   const marks = await marksService.getStudentMarks(String(studentId));

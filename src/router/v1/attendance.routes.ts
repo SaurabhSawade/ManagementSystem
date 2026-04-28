@@ -29,7 +29,10 @@ attendanceRouter.post(
 
 attendanceRouter.get(
   "/",
-  rbacMiddleware.requirePermission(PERMISSIONS.ATTENDANCE_LIST),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.ATTENDANCE_LIST,
+    PERMISSIONS.ATTENDANCE_READ_SELF,
+  ]),
   validateMiddleware.validate(attendanceValidation.listAttendanceSchema),
   attendanceController.listAttendance,
 );

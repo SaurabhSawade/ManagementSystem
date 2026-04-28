@@ -35,6 +35,15 @@ const studentModel = {
       },
     }),
 
+  findByUserId: (userId: string) =>
+    prisma.studentProfile.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { id: true, username: true, email: true, phone: true } },
+        classRoom: true,
+      },
+    }),
+
   updateById: (
     studentId: string,
     data: {

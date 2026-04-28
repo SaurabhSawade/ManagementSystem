@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import attendanceService from "../service/attendance.service";
 import apiResponse from "../utils/apiResponse";
+import studentModel from "../model/student.model";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
 import { ROLES, type RoleCode } from "../constants/roles";
@@ -20,7 +21,6 @@ const hasElevatedAttendanceAccess = (roles: RoleCode[]) =>
 
 const markAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { studentId, classRoomId, subjectId, date, status } = req.body;
-
   const attendance = await attendanceService.markAttendance(
     String(studentId),
     String(classRoomId),
@@ -63,8 +63,26 @@ const bulkMarkAttendance = asyncHandler(async (req: Request, res: Response) => {
 
 const getAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { attendanceId } = req.params;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
 
   const attendance = await attendanceService.getAttendanceById(String(attendanceId));
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  if (!hasElevatedAttendanceAccess(requesterRoles)) {
+    const studentProfile = await studentModel.findByUserId(requesterId);
+
+    if (!studentProfile) {
+      throw new AppError(HTTP_STATUS.NOT_FOUND, "Student profile not found", "NOT_FOUND");
+    }
+
+    if (attendance.studentId !== studentProfile.id) {
+      throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+    }
+  }
 
   res.status(HTTP_STATUS.OK).json(
     apiResponse.buildResponse({
@@ -104,11 +122,28 @@ const updateAttendance = asyncHandler(async (req: Request, res: Response) => {
 
 const listAttendance = asyncHandler(async (req: Request, res: Response) => {
   const { page = "1", limit = "10", studentId, classRoomId, subjectId, status, dateFrom, dateTo, sortBy = "date", sortOrder = "desc" } = req.query;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  const hasSelfOnlyAccess = requesterRoles.includes(ROLES.STUDENT) && !hasElevatedAttendanceAccess(requesterRoles);
+  const studentProfile = hasSelfOnlyAccess ? await studentModel.findByUserId(requesterId) : null;
+
+  if (hasSelfOnlyAccess && !studentProfile) {
+    throw new AppError(HTTP_STATUS.NOT_FOUND, "Student profile not found", "NOT_FOUND");
+  }
+
+  if (hasSelfOnlyAccess && studentId && String(studentId) !== studentProfile!.id) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  }
 
   const result = await attendanceService.listAttendance({
     page: Number(page),
     limit: Number(limit),
-    studentId: toQueryString(studentId),
+    studentId: hasSelfOnlyAccess ? studentProfile!.id : toQueryString(studentId),
     classRoomId: toQueryString(classRoomId),
     subjectId: toQueryString(subjectId),
     status: toQueryString(status),
@@ -138,8 +173,16 @@ const getAttendanceStats = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
   }
 
-  if (!hasElevatedAttendanceAccess(requesterRoles) && String(studentId) !== requesterId) {
-    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  if (!hasElevatedAttendanceAccess(requesterRoles)) {
+    const studentProfile = await studentModel.findByUserId(requesterId);
+
+    if (!studentProfile) {
+      throw new AppError(HTTP_STATUS.NOT_FOUND, "Student profile not found", "NOT_FOUND");
+    }
+
+    if (String(studentId) !== studentProfile.id) {
+      throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+    }
   }
 
   const stats = await attendanceService.getAttendanceStats(String(studentId));

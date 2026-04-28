@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import resultService from "../service/result.service";
+import studentModel from "../model/student.model";
 import apiResponse from "../utils/apiResponse";
 import asyncHandler from "../utils/asyncHandler";
 import { HTTP_STATUS } from "../constants/httpStatus";
@@ -33,11 +34,28 @@ const getResult = asyncHandler(async (req: Request, res: Response) => {
 
 const listResults = asyncHandler(async (req: Request, res: Response) => {
   const { page = "1", limit = "10", studentId, examId, classRoomId, gradeFilter, sortBy = "percentage", sortOrder = "desc" } = req.query;
+  const requesterId = req.auth?.userId;
+  const requesterRoles = req.auth?.roles ?? [];
+
+  if (!requesterId) {
+    throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
+  }
+
+  const hasSelfOnlyAccess = requesterRoles.includes(ROLES.STUDENT) && !hasElevatedResultAccess(requesterRoles);
+  const studentProfile = hasSelfOnlyAccess ? await studentModel.findByUserId(requesterId) : null;
+
+  if (hasSelfOnlyAccess && !studentProfile) {
+    throw new AppError(HTTP_STATUS.NOT_FOUND, "Student profile not found", "NOT_FOUND");
+  }
+
+  if (hasSelfOnlyAccess && studentId && String(studentId) !== studentProfile!.id) {
+    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  }
 
   const results = await resultService.listResults({
     page: Number(page),
     limit: Number(limit),
-    studentId: toQueryString(studentId),
+    studentId: hasSelfOnlyAccess ? studentProfile!.id : toQueryString(studentId),
     examId: toQueryString(examId),
     classRoomId: toQueryString(classRoomId),
     gradeFilter: toQueryString(gradeFilter),
@@ -65,8 +83,16 @@ const getStudentResults = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized", "AUTH_ERROR");
   }
 
-  if (!hasElevatedResultAccess(requesterRoles) && String(studentId) !== requesterId) {
-    throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+  if (!hasElevatedResultAccess(requesterRoles)) {
+    const studentProfile = await studentModel.findByUserId(requesterId);
+
+    if (!studentProfile) {
+      throw new AppError(HTTP_STATUS.NOT_FOUND, "Student profile not found", "NOT_FOUND");
+    }
+
+    if (String(studentId) !== studentProfile.id) {
+      throw new AppError(HTTP_STATUS.FORBIDDEN, "Forbidden", "FORBIDDEN");
+    }
   }
 
   const results = await resultService.getStudentResults(String(studentId));

@@ -13,7 +13,10 @@ resultRouter.use(authMiddleware.requireAuth);
 
 resultRouter.get(
   "/",
-  rbacMiddleware.requirePermission(PERMISSIONS.RESULT_READ),
+  rbacMiddleware.requireAnyPermission([
+    PERMISSIONS.RESULT_READ,
+    PERMISSIONS.RESULT_READ_SELF,
+  ]),
   validateMiddleware.validate(resultValidation.listResultsSchema),
   resultController.listResults,
 );
