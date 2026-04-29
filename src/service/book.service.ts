@@ -1,5 +1,6 @@
 import type { Prisma } from "../generated/prisma/client";
 import bookModel from "../model/book.model";
+import { prisma } from "../config/prisma";
 import appError from "../utils/appError";
 import { HTTP_STATUS } from "../constants/httpStatus";
 
@@ -94,44 +95,72 @@ const listBooks = async (params: {
 };
 
 const issueBook = async (bookId: string, userId: string, dueDate: Date) => {
-  const book = await getBookById(bookId);
+  // Use transaction to avoid race conditions when decrementing availability
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.book.updateMany({
+      where: { id: bookId, available: { gt: 0 } },
+      data: { available: { decrement: 1 } },
+    });
 
-  if (book.available <= 0) {
-    throw new appError(
-      HTTP_STATUS.CONFLICT,
-      "Book is not available",
-      "VALIDATION_ERROR",
-    );
-  }
+    // updateMany returns { count }
+    if ((updated as any).count === 0) {
+      throw new appError(
+        HTTP_STATUS.CONFLICT,
+        "Book is not available",
+        "VALIDATION_ERROR",
+      );
+    }
 
-  await bookModel.updateAvailability(bookId, book.available - 1);
+    const issue = await tx.bookIssue.create({
+      data: {
+        bookId,
+        userId,
+        issueDate: new Date(),
+        dueDate,
+      },
+      include: {
+        book: true,
+        user: { select: { id: true, username: true, email: true } },
+      },
+    });
 
-  return bookModel.createIssue({ bookId, userId, dueDate });
+    return issue;
+  });
 };
 
 const returnBook = async (bookIssueId: string, fineAmount?: number) => {
-  const issue = await bookModel.findIssueById(bookIssueId);
+  return prisma.$transaction(async (tx) => {
+    const issue = await tx.bookIssue.findUnique({ where: { id: bookIssueId } });
 
-  if (!issue) {
-    throw new appError(
-      HTTP_STATUS.NOT_FOUND,
-      "Book issue record not found",
-      "NOT_FOUND",
-    );
-  }
+    if (!issue) {
+      throw new appError(
+        HTTP_STATUS.NOT_FOUND,
+        "Book issue record not found",
+        "NOT_FOUND",
+      );
+    }
 
-  if (issue.returnDate) {
-    throw new appError(
-      HTTP_STATUS.CONFLICT,
-      "Book already returned",
-      "VALIDATION_ERROR",
-    );
-  }
+    if (issue.returnDate) {
+      throw new appError(
+        HTTP_STATUS.CONFLICT,
+        "Book already returned",
+        "VALIDATION_ERROR",
+      );
+    }
 
-  const book = await getBookById(issue.bookId);
-  await bookModel.updateAvailability(issue.bookId, book.available + 1);
+    await tx.book.update({ where: { id: issue.bookId }, data: { available: { increment: 1 } } });
 
-  return bookModel.returnIssue(bookIssueId, fineAmount ?? 0);
+    const updated = await tx.bookIssue.update({
+      where: { id: bookIssueId },
+      data: { returnDate: new Date(), fineAmount: fineAmount ?? 0 },
+      include: {
+        book: true,
+        user: { select: { id: true, username: true, email: true } },
+      },
+    });
+
+    return updated;
+  });
 };
 
 const getBookIssueById = async (bookIssueId: string) => {

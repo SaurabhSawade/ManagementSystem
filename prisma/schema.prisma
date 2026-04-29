@@ -165,7 +165,7 @@ model StudentProfile {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  classRoom     ClassRoom          @relation(fields: [classRoomId], references: [id])
+  classRoom     ClassRoom          @relation(fields: [classRoomId], references: [id], onDelete: Restrict)
   attendance    AttendanceRecord[]
   marks         Mark[]
   results       Result[]
@@ -190,10 +190,12 @@ model AttendanceRecord {
   status      String
   createdAt   DateTime       @default(now())
   student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id])
-  subject     Subject        @relation(fields: [subjectId], references: [id])
+  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id], onDelete: Restrict)
+  subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
 
   @@unique([studentId, subjectId, date])
+  @@index([classRoomId])
+  @@index([subjectId])
 }
 
 model Exam {
@@ -217,11 +219,13 @@ model Mark {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id])
-  subject     Subject        @relation(fields: [subjectId], references: [id])
-  exam        Exam           @relation(fields: [examId], references: [id])
+  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id], onDelete: Restrict)
+  subject     Subject        @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  exam        Exam           @relation(fields: [examId], references: [id], onDelete: Restrict)
 
   @@unique([studentId, subjectId, examId])
+  @@index([classRoomId])
+  @@index([subjectId])
 }
 
 model Result {
@@ -235,10 +239,13 @@ model Result {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   student     StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id])
-  exam        Exam           @relation(fields: [examId], references: [id])
+
+  classRoom   ClassRoom      @relation(fields: [classRoomId], references: [id], onDelete: Restrict)
+  exam        Exam           @relation(fields: [examId], references: [id], onDelete: Restrict)
 
   @@unique([studentId, examId])
+
+  @@index([classRoomId])
 }
 
 model FeeRecord {
@@ -276,6 +283,8 @@ model BookIssue {
   createdAt  DateTime @default(now())
   book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([bookId])
+  @@index([userId])
 }
 
 model ImportJob {
