@@ -7,7 +7,20 @@ const validate =
   (schema: z.ZodTypeAny) =>
   (req: Request, res: Response, next: NextFunction): void => {
     try {
-      schema.parse({ body: req.body, params: req.params, query: req.query });
+      const parsed = schema.parse({ body: req.body, params: req.params, query: req.query }) as {
+        body?: Request["body"];
+        params?: Request["params"];
+        query?: Request["query"];
+      };
+
+      if (parsed.body) {
+        req.body = parsed.body;
+      }
+
+      if (parsed.params) {
+        req.params = parsed.params;
+      }
+
       next();
     } catch (error) {
       if (error instanceof ZodError) {

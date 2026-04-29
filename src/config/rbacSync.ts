@@ -7,44 +7,48 @@ const syncRbac = async () => {
     new Set(Object.values(ROLE_PERMISSIONS).flat()),
   );
 
-  const permissions = await Promise.all(
-    permissionCodes.map((code) =>
-      prisma.permission.upsert({
-        where: { code },
-        update: { name: code },
-        create: { code, name: code },
-      }),
-    ),
-  );
-
-  for (const roleCode of Object.values(ROLES)) {
-    const role = await prisma.role.upsert({
-      where: { code: roleCode },
-      update: { name: roleCode },
-      create: { code: roleCode, name: roleCode },
+  await prisma.$transaction(async (tx) => {
+    await tx.permission.createMany({
+      data: permissionCodes.map((code) => ({ code, name: code })),
+      skipDuplicates: true,
     });
 
-    for (const permissionCode of ROLE_PERMISSIONS[roleCode] ?? []) {
-      const permission = permissions.find((item) => item.code === permissionCode);
-      if (!permission) {
-        continue;
-      }
+    await tx.role.createMany({
+      data: Object.values(ROLES).map((code) => ({ code, name: code })),
+      skipDuplicates: true,
+    });
 
-      await prisma.rolePermission.upsert({
-        where: {
-          roleId_permissionId: {
-            roleId: role.id,
-            permissionId: permission.id,
-          },
-        },
-        update: {},
-        create: {
-          roleId: role.id,
-          permissionId: permission.id,
-        },
-      });
-    }
-  }
+    const [permissions, roles] = await Promise.all([
+      tx.permission.findMany({
+        where: { code: { in: permissionCodes } },
+        select: { id: true, code: true },
+      }),
+      tx.role.findMany({
+        where: { code: { in: Object.values(ROLES) } },
+        select: { id: true, code: true },
+      }),
+    ]);
+
+    const permissionIdByCode = new Map(
+      permissions.map((permission) => [permission.code, permission.id]),
+    );
+    const roleIdByCode = new Map(roles.map((role) => [role.code, role.id]));
+
+    await tx.rolePermission.createMany({
+      data: Object.entries(ROLE_PERMISSIONS).flatMap(([roleCode, permissionCodesForRole]) => {
+        const roleId = roleIdByCode.get(roleCode);
+        if (!roleId) {
+          return [];
+        }
+
+        return permissionCodesForRole.flatMap((permissionCode) => {
+          const permissionId = permissionIdByCode.get(permissionCode);
+          return permissionId ? [{ roleId, permissionId }] : [];
+        });
+      }),
+      skipDuplicates: true,
+    });
+  });
 };
 
 export default syncRbac;

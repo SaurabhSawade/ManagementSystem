@@ -7,15 +7,48 @@ const loginSchema = z.object({
   }),
 });
 
+const otpChannelSchema = z.preprocess(
+  (value) => (typeof value === "string" ? value.toUpperCase() : value),
+  z.enum(["EMAIL", "SMS"]).optional(),
+);
+
 const forgotPasswordRequestSchema = z.object({
   body: z
     .object({
       email: z.string().email().optional(),
       phone: z.string().min(10).optional(),
-      channel: z.enum(["EMAIL", "SMS"]),
+      channel: otpChannelSchema,
     })
-    .refine((value) => value.email || value.phone, {
-      message: "Either email or phone is required",
+    .superRefine((value, ctx) => {
+      if (!value.email && !value.phone) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Either email or phone is required",
+          path: ["email"],
+        });
+      }
+
+      if (value.channel === "EMAIL" && !value.email) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Email is required when channel is EMAIL",
+          path: ["email"],
+        });
+      }
+
+      if (value.channel === "SMS" && !value.phone) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Phone is required when channel is SMS",
+          path: ["phone"],
+        });
+      }
+    })
+    .transform((value) => {
+      return {
+        ...value,
+        channel: value.channel ?? (value.email ? "EMAIL" : "SMS"),
+      };
     }),
 });
 

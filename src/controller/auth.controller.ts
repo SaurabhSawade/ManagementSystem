@@ -59,7 +59,7 @@ const authController = {
       phone: req.body.phone,
       channel: req.body.channel,
     });
-
+    console.log("Forgot password OTP result:", result); // Debug log
     return res.status(HTTP_STATUS.OK).json(
       apiResponse.buildResponse({
         status: HTTP_STATUS.OK,
